@@ -14,15 +14,18 @@ Este proyecto será desarrollado utilizando un stack moderno de tecnologías y h
 * **IDE:** Android Studio (Entorno de Desarrollo Integrado oficial para Android).  
 * **Lenguaje de Programación:** Kotlin (Lenguaje oficial para el desarrollo moderno de Android).  
 * **UI Toolkit:** Jetpack Compose (Framework declarativo moderno para la construcción de interfaces de usuario nativas).  
-* **Diseño Visual:** Material 3 (La última versión del sistema de diseño de Google).  
+* **Diseño Visual:** Material 3 (La última versión del sistema de diseño de Google).
+* **Arquitectura:** MVVM (Model-View-ViewModel para una separación clara de responsabilidades).
+* **Navegación:** Navigation-Compose (Para gestionar la navegación entre pantallas de manera sencilla y eficiente).
+* **Base de Datos Local:** Room (Para el almacenamiento persistente de datos en el dispositivo).
 * **Control de Versiones:** Git y GitHub (Para la gestión del código fuente y la colaboración).  
 * **Gestión de Proyecto:** Trello (Para la organización de tareas y seguimiento del progreso).
 
 Configuración del Proyecto Base  
 Para garantizar la consistencia en el entorno de desarrollo, el proyecto se configurará con las siguientes versiones de SDK y API.
 
-* **compileSdk:** 34 (Android 14\)  
-* **targetSdk:** 34 (Android 14\)  
+* **compileSdk:** 34 (Android 14)  
+* **targetSdk:** 34 (Android 14)  
 * **minSdk:** 24 (Android 7.0 Nougat)
 
 Estrategia de Ramas (Feature Branches)  
@@ -46,7 +49,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
 
 ## **Fase 1: Fundación del Proyecto**
 
-### **Tarjeta 1: Configuración Inicial del Proyecto y Arquitectura MVVM**
+### **Tarea 1: Configuración Inicial del Proyecto y Arquitectura MVVM**
 
 * **Título:** Configuración Inicial del Proyecto y Arquitectura MVVM  
 * **Descripción:** Establecer la base del proyecto en Android Studio, incluyendo la configuración de dependencias (Material 3, Navigation-Compose, etc.) y la creación de la estructura de paquetes para la arquitectura MVVM.  
@@ -58,7 +61,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
   * \[ \] Configurar el repositorio en GitHub y realizar el commit inicial.  
 * **Miembro asignado:** Matías Gutiérrez
 
-### **Tarjeta 2: Creación de Modelos de Datos (Entidades)**
+### **Tarea 2: Creación de Modelos de Datos (Entidades)**
 
 * **Título:** Creación de Modelos de Datos (Entidades)  
 * **Descripción:** Definir las data classes de Kotlin para las entidades principales de la aplicación: Usuario, Producto, ItemCarrito y Reseña.  
@@ -70,7 +73,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
   * \[ \] Definir data class Reseña.  
 * **Miembro asignado:** Víctor Mena
 
-### **Tarjeta 3: Diseño de Tema, Paleta de Colores y Tipografía (Material 3\)**
+### **Tarea 3: Diseño de Tema, Paleta de Colores y Tipografía (Material 3)**
 
 * **Título:** Diseño de Tema, Paleta de Colores y Tipografía (Material 3\)  
 * **Descripción:** Implementar el tema visual de la aplicación en Jetpack Compose siguiendo las especificaciones de Material 3\. Se definirán los colores (negro, azul eléctrico, verde neón) y las fuentes (Roboto, Orbitron).  
@@ -83,7 +86,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
 
 ## **Fase 2: Autenticación y Almacenamiento**
 
-### **Tarjeta 4: Diseño de Pantallas de Autenticación (Login y Registro)**
+### **Tarea 4: Diseño de Pantallas de Autenticación (Login y Registro)**
 
 * **Título:** Diseño de Pantallas de Autenticación (Login y Registro)  
 * **Descripción:** Crear las pantallas de inicio de sesión y registro con Jetpack Compose. Deben incluir campos para email, contraseña y fecha de nacimiento, siguiendo la guía visual.  
@@ -94,7 +97,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
   * \[ \] Incluir Composables para campos de texto, botones y logo.  
 * **Miembro asignado:** David Larenas
 
-### **Tarjeta 5: Implementación de la Lógica de Autenticación y Formularios Validados**
+### **Tarea 5: Implementación de la Lógica de Autenticación y Formularios Validados**
 
 * **Título:** Implementación de la Lógica de Autenticación y Formularios Validados  
 * **Descripción:** Desarrollar la lógica en el ViewModel para gestionar el registro y el inicio de sesión. Esto incluye validar los campos del formulario (email válido, contraseña segura, mayor de 18 años) y mostrar retroalimentación visual al usuario.  
@@ -106,7 +109,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
   * \[ \] Gestionar el estado (loading, success, error) y comunicarlo a la UI.  
 * **Miembro asignado:** Matías Gutiérrez
 
-### **Tarjeta 6: Configuración del Almacenamiento Local (Base de Datos Room)**
+### **Tarea 6: Configuración del Almacenamiento Local (Base de Datos Room)**
 
 * **Título:** Configuración del Almacenamiento Local (Base de Datos Room)  
 * **Descripción:** Implementar la base de datos local usando Room para persistir los datos del usuario, el catálogo de productos y el carrito de compras.  
@@ -120,7 +123,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
 
 ## **Fase 3: Catálogo y Navegación Principal**
 
-### **Tarjeta 7: Implementación de la Navegación Principal de la App**
+### **Tarea 7: Implementación de la Navegación Principal de la App**
 
 * **Título:** Implementación de la Navegación Principal de la App  
 * **Descripción:** Configurar el Navigation Component para Jetpack Compose para gestionar el flujo entre las pantallas: Splash \-\> Login/Registro \-\> Catálogo \-\> Detalle de Producto \-\> Carrito \-\> Perfil.  
@@ -131,7 +134,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
   * \[ \] Implementar las acciones de navegación entre destinos.  
 * **Miembro asignado:** Víctor Mena
 
-### **Tarjeta 8: Diseño del Catálogo de Productos y Vista de Detalle**
+### **Tarea 8: Diseño del Catálogo de Productos y Vista de Detalle**
 
 * **Título:** Diseño del Catálogo de Productos y Vista de Detalle  
 * **Descripción:** Diseñar la interfaz para la lista de productos, utilizando un LazyColumn. También diseñar la pantalla de detalle que muestra la información completa de un producto seleccionado.  
@@ -142,7 +145,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
   * \[ \] Maquetar la screen de detalle del producto.  
 * **Miembro asignado:** David Larenas
 
-### **Tarjeta 9: Lógica y Gestión de Estado del Catálogo y Carrito**
+### **Tarea 9: Lógica y Gestión de Estado del Catálogo y Carrito**
 
 * **Título:** Lógica y Gestión de Estado del Catálogo y Carrito  
 * **Descripción:** Desarrollar los ViewModels para el catálogo de productos y el carrito de compras. La lógica debe permitir obtener los productos de la base de datos y gestionar las operaciones del carrito (agregar, eliminar, modificar cantidad).  
@@ -157,7 +160,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
 
 ## **Fase 4: Funcionalidades de Usuario y Recursos Nativos**
 
-### **Tarjeta 10: Diseño de Interfaz del Perfil de Usuario y Carrito de Compras**
+### **Tarea 10: Diseño de Interfaz del Perfil de Usuario y Carrito de Compras**
 
 * **Título:** Diseño de Interfaz del Perfil de Usuario y Carrito de Compras  
 * **Descripción:** Crear las pantallas para el perfil de usuario (donde se podrá actualizar información) y el carrito de compras (con el resumen de la compra) usando Jetpack Compose.  
@@ -168,7 +171,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
   * \[ \] Diseñar el Composable individual para la lista del carrito.  
 * **Miembro asignado:** David Larenas
 
-### **Tarjeta 11: Integración de Recurso Nativo 1 (Cámara)**
+### **Tarea 11: Integración de Recurso Nativo 1 (Cámara)**
 
 * **Título:** Integración de Recurso Nativo 1 (Cámara)  
 * **Descripción:** Implementar la funcionalidad para que el usuario pueda usar la cámara del dispositivo para tomar o seleccionar una foto para su perfil. Se deben gestionar los permisos correspondientes.  
@@ -180,7 +183,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
   * \[ \] Mostrar la imagen en el perfil del usuario.  
 * **Miembro asignado:** Víctor Mena
 
-### **Tarjeta 12: Integración de Recurso Nativo 2 (Notificaciones Locales)**
+### **Tarea 12: Integración de Recurso Nativo 2 (Notificaciones Locales)**
 
 * **Título:** Integración de Recurso Nativo 2 (Notificaciones Locales)  
 * **Descripción:** Implementar un sistema de notificaciones locales para informar al usuario cuando una compra (simulada) se haya completado exitosamente.  
@@ -193,7 +196,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
 
 ## **Fase 5: Finalización y Entrega**
 
-### **Tarjeta 13: Implementación de Animaciones Funcionales**
+### **Tarea 13: Implementación de Animaciones Funcionales**
 
 * **Título:** Implementación de Animaciones Funcionales  
 * **Descripción:** Añadir animaciones sutiles para mejorar la experiencia de usuario. Esto incluye transiciones entre pantallas y retroalimentación visual en botones o al agregar un producto al carrito.  
@@ -204,7 +207,7 @@ El proyecto utilizará el flujo de trabajo Feature Branch para mantener el códi
   * \[ \] Añadir ripple effect a los botones principales.  
 * **Miembro asignado:** David Larenas
 
-### **Tarjeta 14: Documentación del Proyecto (README.md)**
+### **Tarea 14: Documentación del Proyecto (README.md)**
 
 * **Título:** Documentación del Proyecto (README.md)  
 * **Descripción:** Redactar el archivo README.md del repositorio de GitHub. Debe incluir la descripción del proyecto, los nombres de los integrantes, las funcionalidades implementadas y los pasos para ejecutar la aplicación.  
