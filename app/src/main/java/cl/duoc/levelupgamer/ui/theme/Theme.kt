@@ -11,14 +11,14 @@ import androidx.compose.ui.platform.LocalContext
 
 // Paleta de colores para el tema oscuro
 private val DarkColorScheme = darkColorScheme(
-    primary = NeonGreen,       // Color principal para elementos interactivos
-    secondary = NeonGreen,     // Color secundario, también verde
-    background = Black,        // Fondo principal de la app
-    surface = DarkGray,        // Color para superficies como tarjetas
-    onPrimary = Black,         // Texto sobre el color primario (verde)
-    onSecondary = Black,       // Texto sobre el color secundario (verde)
-    onBackground = OffWhite,   // Texto sobre el fondo principal (negro)
-    onSurface = OffWhite       // Texto sobre superficies (tarjetas)
+    primary = ElectricBlue,    // Botones y elementos destacados
+    secondary = NeonGreen,     // Acentos secundarios
+    background = Black,        // Fondo predominante
+    surface = DarkGray,        // Superficies elevadas
+    onPrimary = OffWhite,      // Texto sobre azul eléctrico
+    onSecondary = Black,       // Texto sobre verde neón
+    onBackground = OffWhite,   // Texto sobre fondo oscuro
+    onSurface = OffWhite       // Texto sobre superficies
 )
 
 // El tema claro no se usará, pero lo dejamos definido
