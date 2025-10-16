@@ -71,6 +71,8 @@ out/
 
 # Misc
 .gradle-test-kit/
+
+# Documentation
 App Level-Up Gamer.md
-Guia_Estructura_Android.md
+Guia de Estructura del Proyecto.md
 
