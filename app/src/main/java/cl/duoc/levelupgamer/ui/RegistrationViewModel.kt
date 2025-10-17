@@ -11,6 +11,7 @@ import java.time.format.DateTimeParseException
 
 class RegistrationViewModel : ViewModel() {
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun onRegistrationClick(
         name: String,
         email: String,
