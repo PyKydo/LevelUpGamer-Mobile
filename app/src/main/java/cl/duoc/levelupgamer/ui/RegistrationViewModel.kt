@@ -1,17 +1,13 @@
 package cl.duoc.levelupgamer.ui
 
-import android.os.Build
 import android.util.Patterns
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
-import java.time.LocalDate
-import java.time.Period
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class RegistrationViewModel : ViewModel() {
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun onRegistrationClick(
         name: String,
         email: String,
@@ -44,7 +40,7 @@ class RegistrationViewModel : ViewModel() {
         val successMessage = if (hasDiscount) {
             "¡Registro exitoso! Tienes un 20% de descuento de por vida."
         } else {
-            "Registro exitoso"
+            "¡Registro exitoso!"
         }
 
         // TODO: Aquí iría la lógica para guardar el usuario en la base de datos
@@ -52,13 +48,21 @@ class RegistrationViewModel : ViewModel() {
         onSuccess(successMessage)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun calculateAge(birthDate: String): Int {
         return try {
-            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-            val date = LocalDate.parse(birthDate, formatter)
-            Period.between(date, LocalDate.now()).years
-        } catch (e: DateTimeParseException) {
+            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val dob = Calendar.getInstance()
+            dob.time = sdf.parse(birthDate) ?: return -1
+
+            val today = Calendar.getInstance()
+
+            var age = today.get(Calendar.YEAR) - dob.get(Calendar.YEAR)
+
+            if (today.get(Calendar.DAY_OF_YEAR) < dob.get(Calendar.DAY_OF_YEAR)) {
+                age--
+            }
+            age
+        } catch (e: Exception) {
             -1 // Devuelve -1 si el formato de fecha es incorrecto
         }
     }
