@@ -1,8 +1,6 @@
 package cl.duoc.levelupgamer.ui.theme
 
-import android.app.Activity
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -14,12 +12,12 @@ import androidx.compose.ui.platform.LocalContext
 private val DarkColorScheme = darkColorScheme(
     primary = ElectricBlue,
     secondary = NeonGreen,
-    background = DarkCharcoal,
-    surface = DarkCharcoal,
-    onPrimary = OffWhite,
-    onSecondary = DarkCharcoal,
-    onBackground = OffWhite,
-    onSurface = OffWhite
+    background = Black,
+    surface = Black,
+    onPrimary = Black,      // Color del texto sobre el color primario (ej. en botones azules)
+    onSecondary = Black,    // Color del texto sobre el color secundario (ej. en botones verdes)
+    onBackground = OffWhite,  // Color del texto sobre el fondo negro
+    onSurface = OffWhite      // Color del texto sobre las superficies negras
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -27,16 +25,15 @@ private val LightColorScheme = lightColorScheme(
     secondary = NeonGreen,
     background = OffWhite,
     surface = OffWhite,
-    onPrimary = DarkCharcoal,
-    onSecondary = DarkCharcoal,
-    onBackground = DarkCharcoal,
-    onSurface = DarkCharcoal
+    onPrimary = OffWhite,
+    onSecondary = Black,
+    onBackground = Black,
+    onSurface = Black
 )
 
 @Composable
 fun LevelUpGamerTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+    darkTheme: Boolean = true, // Forzar el tema oscuro
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
