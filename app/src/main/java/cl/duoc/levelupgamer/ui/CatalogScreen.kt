@@ -14,7 +14,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import cl.duoc.levelupgamer.model.Producto
 
@@ -26,8 +25,8 @@ fun CatalogScreen(products: List<Producto>, onProductClick: (Producto) -> Unit) 
             TopAppBar(
                 title = { Text("Catálogo") },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.secondary, // Verde Neón
+                    titleContentColor = MaterialTheme.colorScheme.onSecondary // Texto negro para contraste
                 )
             )
         }
