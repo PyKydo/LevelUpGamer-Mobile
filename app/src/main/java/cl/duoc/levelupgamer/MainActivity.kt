@@ -5,27 +5,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-<<<<<<< HEAD
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cl.duoc.levelupgamer.model.local.AppDatabase
 import cl.duoc.levelupgamer.model.repository.AuthRepository
 import cl.duoc.levelupgamer.ui.navigation.LevelUpNavHost
-=======
-import androidx.annotation.RequiresApi
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import cl.duoc.levelupgamer.ui.LoginScreen
-import cl.duoc.levelupgamer.ui.RegistrationScreen
->>>>>>> c5d1466 (Se arreglo un error)
 import cl.duoc.levelupgamer.ui.theme.LevelUpGamerTheme
 import cl.duoc.levelupgamer.viewmodel.ProductoViewModel
 import cl.duoc.levelupgamer.viewmodel.ProductoViewModelFactory
 
 class MainActivity : ComponentActivity() {
-    @RequiresApi(Build.VERSION_CODES.O)
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

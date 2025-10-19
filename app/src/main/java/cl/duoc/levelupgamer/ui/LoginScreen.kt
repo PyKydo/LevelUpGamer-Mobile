@@ -15,30 +15,35 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import cl.duoc.levelupgamer.R
-import kotlinx.coroutines.launch
+import cl.duoc.levelupgamer.viewmodel.LoginViewModel
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.text.style.TextAlign
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(onRegisterClick: () -> Unit) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
+fun LoginScreen(
+    vm: LoginViewModel,
+    onRegisterClick: () -> Unit,
+    onLoggedIn: () -> Unit
+) {
+    val form by vm.form.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
@@ -65,37 +70,53 @@ fun LoginScreen(onRegisterClick: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = form.email,
+                onValueChange = vm::onChangeEmail,
                 label = { Text("Email") },
+                isError = form.emailError != null,
+                supportingText = {
+                    form.emailError?.let { err ->
+                        Text(text = err, color = MaterialTheme.colorScheme.error)
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = form.contrasena,
+                onValueChange = vm::onChangeContrasena,
                 label = { Text("Contraseña") },
                 visualTransformation = PasswordVisualTransformation(),
+                isError = form.contrasenaError != null,
+                supportingText = {
+                    form.contrasenaError?.let { err ->
+                        Text(text = err, color = MaterialTheme.colorScheme.error)
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = {
-                    // TODO: Handle login logic
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Inicio de sesión no implementado.")
-                    }
-                },
+                onClick = vm::iniciarSesion,
+                enabled = !form.isLoading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondary
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Iniciar Sesión", color = MaterialTheme.colorScheme.onSecondary)
+                if (form.isLoading) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onSecondary,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(18.dp)
+                    )
+                } else {
+                    Text("Iniciar Sesión", color = MaterialTheme.colorScheme.onSecondary)
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -105,6 +126,19 @@ fun LoginScreen(onRegisterClick: () -> Unit) {
                 modifier = Modifier.clickable { onRegisterClick() },
                 color = MaterialTheme.colorScheme.secondary
             )
+
+            LaunchedEffect(form.isSuccess) {
+                if (form.isSuccess) {
+                    onLoggedIn()
+                    vm.limpiarFormulario()
+                }
+            }
+
+            LaunchedEffect(form.error) {
+                form.error?.let { msg ->
+                    snackbarHostState.showSnackbar(message = msg)
+                }
+            }
         }
     }
 }
