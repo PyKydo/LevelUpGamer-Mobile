@@ -35,7 +35,6 @@ import cl.duoc.levelupgamer.model.Usuario
 fun EditProfileScreen(user: Usuario, onBackClick: () -> Unit) {
     var name by remember { mutableStateOf(user.nombre) }
     var email by remember { mutableStateOf(user.email) }
-    // Se usa un placeholder para la contraseña actual. El usuario puede borrarlo y escribir.
     var password by remember { mutableStateOf("********") }
 
     Scaffold(
@@ -48,7 +47,7 @@ fun EditProfileScreen(user: Usuario, onBackClick: () -> Unit) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
+                    containerColor = MaterialTheme.colorScheme.primary, // Se restaura a verde neón
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                     navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
@@ -74,7 +73,6 @@ fun EditProfileScreen(user: Usuario, onBackClick: () -> Unit) {
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth()
             )
-            // --- Campo Único de Contraseña ---
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -83,7 +81,6 @@ fun EditProfileScreen(user: Usuario, onBackClick: () -> Unit) {
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
             )
-            // --------------------------------
             Spacer(modifier = Modifier.weight(1f))
             Button(
                 onClick = { /* TODO: Lógica para guardar cambios */ },

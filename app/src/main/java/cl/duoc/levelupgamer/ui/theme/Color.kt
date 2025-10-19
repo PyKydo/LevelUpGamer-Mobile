@@ -14,5 +14,5 @@ val Pink40 = Color(0xFF7D5260)
 val Black = Color(0xFF000000)
 val NeonGreen = Color(0xFF39FF14)
 val OffWhite = Color(0xFFF5F5F5)
-val DarkGray = Color(0xFF121212) // Para superficies y tarjetas
-val VibrantRed = Color(0xFFE53935) // Un rojo más fuerte para acciones destructivas
+val DarkGray = Color(0xFF121212)
+val MediumRed = Color(0xFFD32F2F) // Rojo intermedio

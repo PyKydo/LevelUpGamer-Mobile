@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -17,7 +19,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // --- Datos de ejemplo (Fuente única de la verdad) ---
+        // --- Datos de ejemplo  ---
         val sampleUser = Usuario(
             id = 1,
             nombre = "Usuario",
@@ -32,14 +34,41 @@ class MainActivity : ComponentActivity() {
             LevelUpGamerTheme {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "profile") {
-                    composable("profile") {
-                        // Se le pasa el usuario a la pantalla de perfil
+                    composable(
+                        "profile",
+                        exitTransition = {
+                            slideOutOfContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(700)
+                            )
+                        },
+                        popEnterTransition = {
+                            slideIntoContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                animationSpec = tween(700)
+                            )
+                        }
+                    ) {
                         ProfileScreen(
                             user = sampleUser, 
                             onEditClick = { navController.navigate("editProfile") }
                         )
                     }
-                    composable("editProfile") {
+                    composable(
+                        "editProfile",
+                        enterTransition = {
+                            slideIntoContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(700)
+                            )
+                        },
+                        popExitTransition = {
+                            slideOutOfContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                animationSpec = tween(700)
+                            )
+                        }
+                    ) {
                         EditProfileScreen(user = sampleUser, onBackClick = { navController.popBackStack() })
                     }
                 }
