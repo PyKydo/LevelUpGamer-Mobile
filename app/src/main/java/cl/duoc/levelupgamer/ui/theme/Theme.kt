@@ -14,10 +14,10 @@ import androidx.compose.ui.platform.LocalContext
 private val DarkColorScheme = darkColorScheme(
     primary = ElectricBlue,
     secondary = NeonGreen,
-    background = DarkCharcoal,
-    surface = DarkCharcoal,
-    onPrimary = OffWhite,
-    onSecondary = DarkCharcoal,
+    background = Black,
+    surface = Black,
+    onPrimary = Black,
+    onSecondary = Black,
     onBackground = OffWhite,
     onSurface = OffWhite
 )
@@ -27,15 +27,15 @@ private val LightColorScheme = lightColorScheme(
     secondary = NeonGreen,
     background = OffWhite,
     surface = OffWhite,
-    onPrimary = DarkCharcoal,
-    onSecondary = DarkCharcoal,
-    onBackground = DarkCharcoal,
-    onSurface = DarkCharcoal
+    onPrimary = OffWhite,
+    onSecondary = Black,
+    onBackground = Black,
+    onSurface = Black
 )
 
 @Composable
 fun LevelUpGamerTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = true, // Force dark theme
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit

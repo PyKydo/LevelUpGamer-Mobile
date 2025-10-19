@@ -1,47 +1,57 @@
 package cl.duoc.levelupgamer
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.annotation.RequiresApi
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import cl.duoc.levelupgamer.model.repository.AuthRepository
+import cl.duoc.levelupgamer.ui.LoginScreen
+import cl.duoc.levelupgamer.ui.RegistrationScreen
 import cl.duoc.levelupgamer.ui.theme.LevelUpGamerTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import cl.duoc.levelupgamer.viewmodel.LoginViewModel
+import cl.duoc.levelupgamer.viewmodel.LoginViewModelFactory
+import cl.duoc.levelupgamer.viewmodel.RegistrationViewModel
+import cl.duoc.levelupgamer.viewmodel.RegistrationViewModelFactory
 
 class MainActivity : ComponentActivity() {
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             LevelUpGamerTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                val authRepository = AuthRepository()
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = "login") {
+                    composable("login") {
+                        val vm: LoginViewModel = viewModel(factory = LoginViewModelFactory(authRepository))
+                        LoginScreen(
+                            vm = vm,
+                            onRegisterClick = { navController.navigate("register") },
+                            onLoggedIn = {
+                                // Aun nada
+                            }
+                        )
+                    }
+                    composable("register") {
+                        val vm: RegistrationViewModel = viewModel(factory = RegistrationViewModelFactory(authRepository))
+                        RegistrationScreen(
+                            vm = vm,
+                            onRegistered = {
+                                // Tras registro exitoso, volver a login
+                                navController.popBackStack()
+                            },
+                            onGoToLogin = { navController.popBackStack() }
+                        )
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    LevelUpGamerTheme {
-        Greeting("Android")
     }
 }
