@@ -1,5 +1,7 @@
 package cl.duoc.levelupgamer
 
+package cl.duoc.levelupgamer
+
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
