@@ -11,7 +11,8 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 // Paleta de Level-Up Gamer
-val ElectricBlue = Color(0xFF00BFFF) // Azul Eléctrico
-val NeonGreen = Color(0xFF39FF14)    // Verde Neón
-val DarkCharcoal = Color(0xFF1A1A1A)  // Negro para fondos
-val OffWhite = Color(0xFFF5F5F5)      // Blanco para textos
+val Black = Color(0xFF000000)
+val NeonGreen = Color(0xFF39FF14)
+val OffWhite = Color(0xFFF5F5F5)
+val DarkGray = Color(0xFF121212) // Para superficies y tarjetas
+val VibrantRed = Color(0xFFE53935) // Un rojo más fuerte para acciones destructivas
