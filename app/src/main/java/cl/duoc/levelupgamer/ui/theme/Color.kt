@@ -9,3 +9,4 @@ val NeonGreen = Color(0xFF39FF14)      // Verde neón (primario actual)
 val OffWhite = Color(0xFFF5F5F5)       // Blanco apagado para texto/fondos claros
 val DarkGray = Color(0xFF121212)       // Superficies/tarjetas en tema oscuro
 val VibrantRed = Color(0xFFE53935)     // Acciones destructivas
+val MediumRed = Color(0xFFD32F2F)      // Rojo intermedio (para variaciones de UI)
