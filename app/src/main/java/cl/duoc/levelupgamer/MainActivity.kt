@@ -22,13 +22,16 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             LevelUpGamerTheme {
+<<<<<<< HEAD
                 val productosVm: ProductoViewModel = viewModel(factory = ProductoViewModelFactory(database))
                 val authRepository = remember { AuthRepository() }
                 LevelUpNavHost(
                     productosVm = productosVm,
-                    authRepository = authRepository
                 )
-            }
-        }
+=======
+                AppDatabase.get(applicationContext)
+                val authRepository = AuthRepository()
+                val navController = rememberNavController()
+                NavHost(
     }
 }
