@@ -14,7 +14,9 @@ class ProductoRepository(private val dao: ProductoDao) {
         val normalized = producto.copy(
             nombre = producto.nombre.trim(),
             descripcion = producto.descripcion.trim(),
-            imageUrl = producto.imageUrl.trim()
+            imageUrl = producto.imageUrl.trim(),
+            categoria = producto.categoria.trim(),
+            codigo = producto.codigo.trim()
         )
         return if (producto.id == 0L) dao.insertar(normalized) else {
             dao.actualizar(normalized.copy(id = producto.id)); producto.id
