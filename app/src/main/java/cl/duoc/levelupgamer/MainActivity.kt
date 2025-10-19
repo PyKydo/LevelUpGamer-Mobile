@@ -18,6 +18,7 @@ import cl.duoc.levelupgamer.viewmodel.LoginViewModel
 import cl.duoc.levelupgamer.viewmodel.LoginViewModelFactory
 import cl.duoc.levelupgamer.viewmodel.RegistrationViewModel
 import cl.duoc.levelupgamer.viewmodel.RegistrationViewModelFactory
+import cl.duoc.levelupgamer.model.local.AppDatabase
 
 class MainActivity : ComponentActivity() {
     
@@ -26,6 +27,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             LevelUpGamerTheme {
+                AppDatabase.get(applicationContext)
                 val authRepository = AuthRepository()
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "login") {
@@ -44,7 +46,7 @@ class MainActivity : ComponentActivity() {
                         RegistrationScreen(
                             vm = vm,
                             onRegistered = {
-                                // Tras registro exitoso, volver a login
+                                // Tras registrarse exitosamente, debe volver al login
                                 navController.popBackStack()
                             },
                             onGoToLogin = { navController.popBackStack() }
