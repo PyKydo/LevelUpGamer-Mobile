@@ -126,6 +126,5 @@ abstract class AppDatabase : RoomDatabase() {
                 INSTANCE = db
                 db
             }
-
     }
 }
