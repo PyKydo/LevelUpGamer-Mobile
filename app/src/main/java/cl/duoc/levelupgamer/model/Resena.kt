@@ -8,7 +8,7 @@ data class Resena(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val usuarioId: Long,
     val productoId: Long,
-    val calificacion: Int, // Calificación de 1 a 5
+    val calificacion: Int,
     val comentario: String? = null,
     val fecha: Long = System.currentTimeMillis()
 )
