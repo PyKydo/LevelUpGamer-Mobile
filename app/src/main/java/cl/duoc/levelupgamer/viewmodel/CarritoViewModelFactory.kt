@@ -2,6 +2,7 @@ package cl.duoc.levelupgamer.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import cl.duoc.levelupgamer.model.local.AppDatabase
 import cl.duoc.levelupgamer.model.repository.CarritoRepository
 
 class CarritoViewModelFactory(private val db: AppDatabase, private val usuarioId: Long) : ViewModelProvider.Factory {

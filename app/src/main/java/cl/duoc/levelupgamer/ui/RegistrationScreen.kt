@@ -1,6 +1,5 @@
 package cl.duoc.levelupgamer.ui
 
-import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,7 +21,6 @@ import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -30,7 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
@@ -84,9 +80,9 @@ fun RegistrationScreen(
                     onDismissRequest = { showTermsDialog = false },
                     title = { Text("Términos y Condiciones") },
                     text = {
-                        Column(Modifier.verticalScroll(rememberScrollState())) {
-                            Text(text = "Al aceptar, confirmas que eres mayor de 18 años y que estás de acuerdo con nuestras políticas de privacidad y uso de datos. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
-                        }
+                        Text(
+                            text = "Al aceptar confirmas que eres mayor de edad y aceptas el uso de tus datos para brindar el servicio."
+                        )
                     },
                     confirmButton = {
                         TextButton(onClick = { showTermsDialog = false }) {
@@ -97,35 +93,26 @@ fun RegistrationScreen(
             }
 
             if (showDatePicker) {
-                val spanishLocale = Locale.forLanguageTag("es-CL")
-                val newConfig = Configuration(LocalConfiguration.current)
-                newConfig.setLocale(spanishLocale)
-
-                CompositionLocalProvider(LocalConfiguration provides newConfig) {
-                    DatePickerDialog(
-                        onDismissRequest = { showDatePicker = false },
-                        confirmButton = {
-                            TextButton(
-                                onClick = {
-                                    val selectedMillis = datePickerState.selectedDateMillis
-                                    if (selectedMillis != null) {
-                                        val sdf = SimpleDateFormat("dd/MM/yyyy", spanishLocale)
-                                        sdf.timeZone = TimeZone.getTimeZone("UTC")
-                                        val fecha = sdf.format(Date(selectedMillis))
-                                        vm.onChangeFechaNacimiento(fecha)
-                                    }
-                                    showDatePicker = false
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                val selectedMillis = datePickerState.selectedDateMillis
+                                if (selectedMillis != null) {
+                                    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.forLanguageTag("es-CL"))
+                                    sdf.timeZone = TimeZone.getTimeZone("UTC")
+                                    vm.onChangeFechaNacimiento(sdf.format(Date(selectedMillis)))
                                 }
-                            ) { Text("Aceptar") }
-                        },
-                        dismissButton = {
-                            TextButton(
-                                onClick = { showDatePicker = false }
-                            ) { Text("Cancelar") }
-                        }
-                    ) {
-                        DatePicker(state = datePickerState)
+                                showDatePicker = false
+                            }
+                        ) { Text("Aceptar") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
                     }
+                ) {
+                    DatePicker(state = datePickerState)
                 }
             }
 
@@ -174,13 +161,10 @@ fun RegistrationScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { showDatePicker = true },
-                enabled = false,
-                colors = OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledBorderColor = MaterialTheme.colorScheme.outline,
-                    disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                readOnly = true,
+                supportingText = {
+                    form.fechaNacimientoError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
