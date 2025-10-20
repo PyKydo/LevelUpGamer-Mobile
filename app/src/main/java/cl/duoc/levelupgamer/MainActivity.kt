@@ -77,10 +77,6 @@ class MainActivity : ComponentActivity() {
                         RegistrationScreen(
                             vm = vm,
                             onRegistered = {
-<<<<<<< HEAD
-=======
-                                // Tras registrarse exitosamente, debe volver al login
->>>>>>> ed9eea2 (Actualización de la base de datos y modelo de productos: se agregó lógica para insertar productos iniciales y se modificó la estructura del modelo Producto.)
                                 navController.popBackStack()
                             },
                             onGoToLogin = { navController.popBackStack() }
