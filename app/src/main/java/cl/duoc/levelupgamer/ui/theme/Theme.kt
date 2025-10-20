@@ -10,14 +10,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = NeonGreen,       // Color principal para elementos interactivos
-    secondary = NeonGreen,     // Color secundario, también verde
-    background = Black,        // Fondo principal de la app
-    surface = DarkGray,        // Color para superficies como tarjetas
-    onPrimary = Black,         // Texto sobre el color primario (verde)
-    onSecondary = Black,       // Texto sobre el color secundario (verde)
-    onBackground = OffWhite,   // Texto sobre el fondo principal (negro)
-    onSurface = OffWhite       // Texto sobre superficies (tarjetas)
+    primary = ElectricBlue,   
+    secondary = NeonGreen,    
+    background = Black,      
+    surface = DarkGray,      
+    onPrimary = OffWhite,   
+    onSecondary = Black,     
+    onBackground = OffWhite, 
+    onSurface = OffWhite     
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -33,7 +33,7 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun LevelUpGamerTheme(
-    darkTheme: Boolean = true,
+    darkTheme: Boolean = true, 
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {

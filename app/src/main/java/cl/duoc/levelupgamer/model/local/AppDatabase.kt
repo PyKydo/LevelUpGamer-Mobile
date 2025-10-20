@@ -54,6 +54,7 @@ abstract class AppDatabase : RoomDatabase() {
                                 nombre = "Catan",
                                 descripcion = "Categoría: Juegos de Mesa | Código: JM001",
                                 precio = 29990.0,
+                                imageUrl = "products_jm001_catan",
                                 categoria = "Juegos de Mesa",
                                 codigo = "JM001"
                             )
@@ -61,6 +62,7 @@ abstract class AppDatabase : RoomDatabase() {
                                 nombre = "Carcassonne",
                                 descripcion = "Categoría: Juegos de Mesa | Código: JM002",
                                 precio = 24990.0,
+                                imageUrl = "products_jm002_carcassonne",
                                 categoria = "Juegos de Mesa",
                                 codigo = "JM002"
                             )
@@ -68,6 +70,7 @@ abstract class AppDatabase : RoomDatabase() {
                                 nombre = "Controlador Inalámbrico Xbox Series X",
                                 descripcion = "Categoría: Accesorios | Código: AC001",
                                 precio = 59990.0,
+                                imageUrl = "products_ac001_xbox_controller",
                                 categoria = "Accesorios",
                                 codigo = "AC001"
                             )
@@ -75,6 +78,7 @@ abstract class AppDatabase : RoomDatabase() {
                                 nombre = "Auriculares Gamer HyperX Cloud II",
                                 descripcion = "Categoría: Accesorios | Código: AC002",
                                 precio = 79990.0,
+                                imageUrl = "products_ac002_hyperx_cloud",
                                 categoria = "Accesorios",
                                 codigo = "AC002"
                             )
@@ -82,6 +86,7 @@ abstract class AppDatabase : RoomDatabase() {
                                 nombre = "PlayStation 5",
                                 descripcion = "Categoría: Consolas | Código: CO001",
                                 precio = 549990.0,
+                                imageUrl = "products_co001_ps5",
                                 categoria = "Consolas",
                                 codigo = "CO001"
                             )
@@ -89,6 +94,7 @@ abstract class AppDatabase : RoomDatabase() {
                                 nombre = "PC Gamer ASUS ROG Strix",
                                 descripcion = "Categoría: Computadores Gamers | Código: CG001",
                                 precio = 1299990.0,
+                                imageUrl = "products_cg001_asus_rog",
                                 categoria = "Computadores Gamers",
                                 codigo = "CG001"
                             )
@@ -96,6 +102,7 @@ abstract class AppDatabase : RoomDatabase() {
                                 nombre = "Silla Gamer Secretlab Titan",
                                 descripcion = "Categoría: Sillas Gamers | Código: SG001",
                                 precio = 349990.0,
+                                imageUrl = "products_sg001_secretlab_titan",
                                 categoria = "Sillas Gamers",
                                 codigo = "SG001"
                             )
@@ -103,6 +110,7 @@ abstract class AppDatabase : RoomDatabase() {
                                 nombre = "Mouse Gamer Logitech G502 HERO",
                                 descripcion = "Categoría: Mouse | Código: MS001",
                                 precio = 49990.0,
+                                imageUrl = "products_ms001_logitech_g502",
                                 categoria = "Mouse",
                                 codigo = "MS001"
                             )
@@ -110,6 +118,7 @@ abstract class AppDatabase : RoomDatabase() {
                                 nombre = "Mousepad Razer Goliathus Extended Chroma",
                                 descripcion = "Categoría: Mousepad | Código: MP001",
                                 precio = 29990.0,
+                                imageUrl = "products_mp001_razer_goliathus",
                                 categoria = "Mousepad",
                                 codigo = "MP001"
                             )
@@ -117,6 +126,7 @@ abstract class AppDatabase : RoomDatabase() {
                                 nombre = "Polera Gamer Personalizada 'Level-Up'",
                                 descripcion = "Categoría: Poleras Personalizadas | Código: PP001",
                                 precio = 14990.0,
+                                imageUrl = "products_pp001_levelup_tshirt",
                                 categoria = "Poleras Personalizadas",
                                 codigo = "PP001"
                             )

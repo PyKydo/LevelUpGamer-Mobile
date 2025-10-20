@@ -14,7 +14,6 @@ interface ProductoDao {
 
     @Query("SELECT COUNT(*) FROM productos")
     suspend fun contar(): Int
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(producto: Producto): Long
 
