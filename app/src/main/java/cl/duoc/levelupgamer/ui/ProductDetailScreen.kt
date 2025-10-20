@@ -34,17 +34,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import cl.duoc.levelupgamer.R
 import cl.duoc.levelupgamer.model.Producto
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(producto: Producto, onBackClick: () -> Unit) {
     var isExpanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val imageResId = remember(producto.codigo, producto.imageUrl) {
+        resolveProductImageResId(context, producto)
+    }
 
     Scaffold(
         topBar = {
@@ -70,7 +74,7 @@ fun ProductDetailScreen(producto: Producto, onBackClick: () -> Unit) {
                 .verticalScroll(rememberScrollState())
         ) {
             Image(
-                painter = painterResource(id = R.drawable.logo), // Placeholder
+                painter = painterResource(id = imageResId),
                 contentDescription = producto.nombre,
                 modifier = Modifier
                     .fillMaxWidth()
