@@ -51,10 +51,10 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+
     // Room (runtime + ktx) and compiler (kapt)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.compose.material3)
     kapt(libs.androidx.room.compiler)
 
     // Navigation, ViewModel, and DataStore from guide

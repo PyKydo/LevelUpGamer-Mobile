@@ -1,6 +1,6 @@
 package cl.duoc.levelupgamer.ui
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,17 +21,16 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import cl.duoc.levelupgamer.model.Usuario
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileScreen(user: Usuario, onBackClick: () -> Unit, onChangePasswordClick: () -> Unit) {
+fun ChangePasswordScreen(onBackClick: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Editar Perfil") },
+                title = { Text("Cambiar Contraseña") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
@@ -49,43 +48,36 @@ fun EditProfileScreen(user: Usuario, onBackClick: () -> Unit, onChangePasswordCl
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it)
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(
-                value = user.nombre,
+                value = "",
                 onValueChange = {},
-                label = { Text("Nombre") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = user.email,
-                onValueChange = {},
-                label = { Text("Email") },
+                label = { Text("Contraseña Actual") },
                 modifier = Modifier.fillMaxWidth(),
-                readOnly = true
+                visualTransformation = PasswordVisualTransformation()
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Campo de contraseña sin ícono para evitar el error
             OutlinedTextField(
-                value = "••••••••",
+                value = "",
                 onValueChange = {},
-                label = { Text("Contraseña") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onChangePasswordClick() }, // <-- La acción de clic se mantiene
-                readOnly = true, // No se puede escribir en él
+                label = { Text("Nueva Contraseña") },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation()
             )
-
-            Spacer(modifier = Modifier.weight(1f))
-
+            OutlinedTextField(
+                value = "",
+                onValueChange = {},
+                label = { Text("Confirmar Nueva Contraseña") },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = PasswordVisualTransformation()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = onBackClick,
+                onClick = onBackClick, // Simplemente vuelve atrás
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Guardar Cambios")
+                Text("Actualizar Contraseña")
             }
         }
     }
