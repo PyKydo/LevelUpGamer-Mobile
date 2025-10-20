@@ -9,7 +9,6 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-// Paleta de colores para el tema oscuro
 private val DarkColorScheme = darkColorScheme(
     primary = NeonGreen,       // Color principal para elementos interactivos
     secondary = NeonGreen,     // Color secundario, también verde
@@ -21,7 +20,6 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = OffWhite       // Texto sobre superficies (tarjetas)
 )
 
-// El tema claro no se usará, pero lo dejamos definido
 private val LightColorScheme = lightColorScheme(
     primary = NeonGreen,
     secondary = NeonGreen,
@@ -35,7 +33,7 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun LevelUpGamerTheme(
-    darkTheme: Boolean = true, // Forzamos el tema oscuro
+    darkTheme: Boolean = true,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {

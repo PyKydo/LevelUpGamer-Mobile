@@ -1,5 +1,6 @@
 package cl.duoc.levelupgamer
 
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -29,27 +30,29 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // --- Datos de ejemplo  ---
-                val navController = rememberNavController()
-                NavHost(
-                    navController = navController,
-                    startDestination = "login"
-                ) {
-                    composable(
-                        "login",
+        val sampleUser = Usuario(
+            id = 1,
+            nombre = "Usuario",
+            email = "usuario@email.com",
+            fechaNacimiento = "01/01/2000",
+            fotoPerfilUrl = null
+        )
+        // -----------------------------------------------------
+
+        setContent {
+            LevelUpGamerTheme {
+                // Inicialización de Room si aplica
+                AppDatabase.get(applicationContext)
+
                 val authRepository = AuthRepository()
                 val navController = rememberNavController()
-<<<<<<< HEAD
+
                 NavHost(
                     navController = navController,
                     startDestination = "login"
                 ) {
                     composable(
-                        "login",
-=======
-                NavHost(navController = navController, startDestination = "profile") {
-                    composable(
-                        "profile",
+                        route = "login",
                         exitTransition = {
                             slideOutOfContainer(
                                 towards = AnimatedContentTransitionScope.SlideDirection.Left,
@@ -63,35 +66,50 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     ) {
-<<<<<<< HEAD
                         val vm: LoginViewModel = viewModel(factory = LoginViewModelFactory(authRepository))
                         LoginScreen(
                             vm = vm,
                             onRegisterClick = { navController.navigate("register") },
                             onLoggedIn = {
-                                // Ir al perfil tras login
                                 navController.navigate("profile") {
                                     popUpTo("login") { inclusive = true }
                                 }
                             }
                         )
                     }
+
                     composable(
-                        "register",
+                        route = "register",
                         enterTransition = {
                             slideIntoContainer(
                                 towards = AnimatedContentTransitionScope.SlideDirection.Left,
                                 animationSpec = tween(700)
                             )
                         },
-                    composable("profile") {
+                        popExitTransition = {
+                            slideOutOfContainer(
+                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                animationSpec = tween(700)
+                            )
+                        }
+                    ) {
+                        val vm: RegistrationViewModel = viewModel(factory = RegistrationViewModelFactory(authRepository))
+                        RegistrationScreen(
+                            vm = vm,
+                            onRegistered = { navController.popBackStack() },
+                            onGoToLogin = { navController.popBackStack() }
+                        )
+                    }
+
+                    composable(route = "profile") {
                         ProfileScreen(
                             user = sampleUser,
                             onEditClick = { navController.navigate("editProfile") }
                         )
                     }
+
                     composable(
-                        "editProfile",
+                        route = "editProfile",
                         enterTransition = {
                             slideIntoContainer(
                                 towards = AnimatedContentTransitionScope.SlideDirection.Left,
@@ -105,22 +123,10 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     ) {
-                        EditProfileScreen(user = sampleUser, onBackClick = { navController.popBackStack() })
-                    }
-                        enterTransition = {
-                            slideIntoContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                                animationSpec = tween(700)
-                            )
-                        },
-                        popExitTransition = {
-                            slideOutOfContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                                animationSpec = tween(700)
-                            )
-                        }
-                    ) {
-                        EditProfileScreen(user = sampleUser, onBackClick = { navController.popBackStack() })
+                        EditProfileScreen(
+                            user = sampleUser,
+                            onBackClick = { navController.popBackStack() }
+                        )
                     }
                 }
             }
