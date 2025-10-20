@@ -10,7 +10,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import cl.duoc.levelupgamer.model.repository.AuthRepository
 import cl.duoc.levelupgamer.ui.LoginScreen
 import cl.duoc.levelupgamer.ui.RegistrationScreen
@@ -36,6 +43,7 @@ class MainActivity : ComponentActivity() {
             LevelUpGamerTheme {
                 val authRepository = AuthRepository()
                 val navController = rememberNavController()
+                val productosVm: ProductoViewModel = viewModel(factory = ProductoViewModelFactory(db))
                 NavHost(
                     navController = navController, 
                     startDestination = "login"
@@ -92,23 +100,36 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("catalog") {
-                        val productosVm: ProductoViewModel = viewModel(factory = ProductoViewModelFactory(db))
-                        val productos = productosVm.productos.collectAsState().value
+                        val productos by productosVm.productos.collectAsState()
                         CatalogScreen(products = productos) { producto ->
                             navController.navigate("productDetail/${producto.id}")
                         }
                     }
                     composable("productDetail/{productId}") { backStackEntry ->
                         val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
-                        val productosVm: ProductoViewModel = viewModel(factory = ProductoViewModelFactory(db))
-                        val productos = productosVm.productos.collectAsState().value
-                        val product = productos.find { p -> p.id == productId }
-                        if (product != null) {
-                            ProductDetailScreen(producto = product) {
+                        val productos by productosVm.productos.collectAsState()
+                        val product = productos.firstOrNull { p -> p.id == productId }
+
+                        LaunchedEffect(productId, productos) {
+                            if (productId == null || (productos.isNotEmpty() && product == null)) {
                                 navController.popBackStack()
                             }
-                        } else {
-                            navController.popBackStack()
+                        }
+
+                        when {
+                            product != null -> {
+                                ProductDetailScreen(producto = product) {
+                                    navController.popBackStack()
+                                }
+                            }
+                            else -> {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
                         }
                     }
                 }
