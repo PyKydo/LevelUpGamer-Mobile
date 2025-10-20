@@ -87,11 +87,6 @@ fun CartItemCard(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Text(
-                    text = "Subtotal: $${String.format("%.2f", producto.precio * quantity)}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
