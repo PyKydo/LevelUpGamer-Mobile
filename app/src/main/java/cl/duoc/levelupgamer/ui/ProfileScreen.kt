@@ -11,7 +11,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,11 +21,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -39,7 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -47,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import cl.duoc.levelupgamer.R
 import cl.duoc.levelupgamer.model.Usuario
-import cl.duoc.levelupgamer.ui.theme.MediumRed
 import coil.compose.AsyncImage
 import java.io.File
 import java.text.SimpleDateFormat
@@ -65,36 +61,29 @@ fun ProfileScreen(
     onLogoutClick: () -> Unit
 ) {
     var showDialog by remember { mutableStateOf(false) }
-    // Variable temporal para guardar la URI de la cámara antes de confirmar
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
 
-    // --- Lanzador para la galería (funciona como antes) ---
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri -> onImageUriChange(uri) }
     )
 
-    // --- Lanzador para la cámara (lógica corregida) ---
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { success ->
             if (success) {
-                // Solo si la foto se tomó con éxito, se actualiza la URI principal
                 onImageUriChange(tempCameraUri)
             }
         }
     )
 
-    // --- Lanzador para el permiso de la cámara ---
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
             if (isGranted) {
                 val uri = createImageUri(context)
-                // Se guarda la URI en la variable temporal
                 tempCameraUri = uri
-                // Se lanza la cámara
                 takePictureLauncher.launch(uri)
             }
         }
@@ -131,16 +120,17 @@ fun ProfileScreen(
             TopAppBar(
                 title = { Text("Mi Perfil") },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    titleContentColor = MaterialTheme.colorScheme.onSecondary
                 )
             )
-        }
-    ) {
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(paddingValues)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -150,7 +140,7 @@ fun ProfileScreen(
                 modifier = Modifier
                     .size(120.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
                     .clickable { showDialog = true },
                 contentAlignment = Alignment.Center
             ) {
@@ -165,24 +155,39 @@ fun ProfileScreen(
             Text(
                 text = user.nombre,
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
             Text(
                 text = user.email,
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Card(
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                tonalElevation = 4.dp,
+                shape = MaterialTheme.shapes.medium
             ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    InfoRow(label = "Nombre Completo", value = user.nombre)
-                    InfoRow(label = "Email", value = user.email)
-                    InfoRow(label = "Fecha de Nacimiento", value = user.fechaNacimiento)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "Fecha de nacimiento",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = user.fechaNacimiento,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
 
@@ -191,16 +196,20 @@ fun ProfileScreen(
             Button(
                 onClick = onEditClick,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary
+                )
             ) {
-                Text("Editar Perfil", color = MaterialTheme.colorScheme.onPrimary)
+                Text("Editar Perfil")
             }
+            Spacer(modifier = Modifier.height(12.dp))
             Button(
                 onClick = onLogoutClick,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MediumRed,
-                    contentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
                 )
             ) {
                 Text("Cerrar Sesión")
@@ -209,15 +218,6 @@ fun ProfileScreen(
     }
 }
 
-@Composable
-fun InfoRow(label: String, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Column {
-            Text(text = label, style = MaterialTheme.typography.bodySmall, color = Color.White)
-            Text(text = value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
-        }
-    }
-}
 
 private fun createImageUri(context: Context): Uri {
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())

@@ -8,8 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,7 +34,7 @@ fun ChangePasswordScreen(onBackClick: () -> Unit) {
                 title = { Text("Cambiar Contraseña") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -74,8 +75,12 @@ fun ChangePasswordScreen(onBackClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = onBackClick, // Simplemente vuelve atrás
-                modifier = Modifier.fillMaxWidth()
+                onClick = onBackClick, 
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary
+                )
             ) {
                 Text("Actualizar Contraseña")
             }

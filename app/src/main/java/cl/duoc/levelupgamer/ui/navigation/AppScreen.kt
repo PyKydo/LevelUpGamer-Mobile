@@ -10,4 +10,6 @@ sealed class AppScreen(val route: String) {
     }
     object Cart : AppScreen("cart")
     object Profile : AppScreen("profile")
+    object EditProfile : AppScreen("profile/edit")
+    object ChangePassword : AppScreen("profile/change-password")
 }

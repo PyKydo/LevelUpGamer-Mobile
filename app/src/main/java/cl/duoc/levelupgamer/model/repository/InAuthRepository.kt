@@ -9,4 +9,5 @@ interface InAuthRepository {
     suspend fun iniciarSesion(email: String, contrasena: String): Usuario
     suspend fun existe(email: String): Boolean
     suspend fun cerrarSesion()
+    suspend fun actualizarPerfil(nombre: String, email: String)
 }

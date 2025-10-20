@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,17 +27,25 @@ import cl.duoc.levelupgamer.model.Producto
 fun CatalogScreen(
     products: List<Producto>,
     onProductClick: (Producto) -> Unit,
-    onViewCart: () -> Unit
+    onViewCart: () -> Unit,
+    onOpenProfile: () -> Unit
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Catálogo") },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondary, // Verde Neón
-                    titleContentColor = MaterialTheme.colorScheme.onSecondary // Texto negro para contraste
+                    containerColor = MaterialTheme.colorScheme.secondary, 
+                    titleContentColor = MaterialTheme.colorScheme.onSecondary 
                 ),
                 actions = {
+                    IconButton(onClick = onOpenProfile) {
+                        Icon(
+                            imageVector = Icons.Filled.Person,
+                            contentDescription = "Ver perfil",
+                            tint = MaterialTheme.colorScheme.onSecondary
+                        )
+                    }
                     IconButton(onClick = onViewCart) {
                         Icon(
                             imageVector = Icons.Default.ShoppingCart,

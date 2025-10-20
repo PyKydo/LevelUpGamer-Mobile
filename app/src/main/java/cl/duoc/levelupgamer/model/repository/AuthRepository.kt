@@ -63,4 +63,35 @@ class AuthRepository : InAuthRepository {
     override suspend fun cerrarSesion() {
         _usuarioActual.value = null
     }
+
+    override suspend fun actualizarPerfil(nombre: String, email: String) {
+        val actual = _usuarioActual.value
+            ?: throw IllegalStateException("No hay un usuario autenticado para actualizar.")
+
+        val nombreNormalizado = nombre.trim()
+        val emailNormalizado = email.trim().lowercase()
+
+        if (nombreNormalizado.isBlank() || emailNormalizado.isBlank()) {
+            throw IllegalArgumentException("Nombre y email no pueden estar vacíos.")
+        }
+
+        val registroActual = usuariosRegistrados[actual.email]
+            ?: throw IllegalStateException("El usuario actual no existe en el registro interno.")
+
+        if (emailNormalizado != actual.email && usuariosRegistrados.containsKey(emailNormalizado)) {
+            throw IllegalArgumentException("El email ya está registrado.")
+        }
+
+        if (emailNormalizado != actual.email) {
+            usuariosRegistrados.remove(actual.email)
+        }
+
+        val usuarioActualizado = registroActual.usuario.copy(
+            nombre = nombreNormalizado,
+            email = emailNormalizado
+        )
+
+        usuariosRegistrados[emailNormalizado] = UsuarioRegistro(usuarioActualizado, registroActual.contrasena)
+        _usuarioActual.value = usuarioActualizado
+    }
 }

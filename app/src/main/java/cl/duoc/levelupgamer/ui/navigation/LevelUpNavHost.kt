@@ -1,9 +1,14 @@
 package cl.duoc.levelupgamer.ui.navigation
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -14,8 +19,11 @@ import androidx.navigation.navArgument
 import cl.duoc.levelupgamer.model.local.AppDatabase
 import cl.duoc.levelupgamer.model.repository.InAuthRepository
 import cl.duoc.levelupgamer.ui.CatalogScreen
+import cl.duoc.levelupgamer.ui.ChangePasswordScreen
+import cl.duoc.levelupgamer.ui.EditProfileScreen
 import cl.duoc.levelupgamer.ui.LoginScreen
 import cl.duoc.levelupgamer.ui.ProductDetailScreen
+import cl.duoc.levelupgamer.ui.ProfileScreen
 import cl.duoc.levelupgamer.ui.RegistrationScreen
 import cl.duoc.levelupgamer.ui.ShoppingCartScreen
 import cl.duoc.levelupgamer.viewmodel.CarritoViewModel
@@ -25,6 +33,7 @@ import cl.duoc.levelupgamer.viewmodel.LoginViewModelFactory
 import cl.duoc.levelupgamer.viewmodel.ProductoViewModel
 import cl.duoc.levelupgamer.viewmodel.RegistrationViewModel
 import cl.duoc.levelupgamer.viewmodel.RegistrationViewModelFactory
+import kotlinx.coroutines.launch
 
 @Composable
 fun LevelUpNavHost(
@@ -41,6 +50,11 @@ fun LevelUpNavHost(
             factory = CarritoViewModelFactory(database, usuario.id)
         )
     }
+    var profileImageUri by remember(usuarioActual?.id) {
+        mutableStateOf(usuarioActual?.fotoPerfilUrl?.let { Uri.parse(it) })
+    }
+    var profileUpdateError by remember(usuarioActual?.id) { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
 
     NavHost(
         navController = navController,
@@ -81,8 +95,83 @@ fun LevelUpNavHost(
             CatalogScreen(
                 products = productos,
                 onProductClick = { producto -> navController.navigate(AppScreen.ProductDetail.createRoute(producto.id)) },
-                onViewCart = { navController.navigate(AppScreen.Cart.route) }
+                onViewCart = { navController.navigate(AppScreen.Cart.route) },
+                onOpenProfile = {
+                    profileUpdateError = null
+                    navController.navigate(AppScreen.Profile.route)
+                }
             )
+        }
+        composable(AppScreen.Profile.route) {
+            val usuario = usuarioActual
+            if (usuario == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(AppScreen.Login.route) {
+                        popUpTo(AppScreen.Catalog.route) { inclusive = true }
+                    }
+                }
+            } else {
+                ProfileScreen(
+                    user = usuario,
+                    imageUri = profileImageUri,
+                    onImageUriChange = { profileImageUri = it },
+                    onEditClick = {
+                        profileUpdateError = null
+                        navController.navigate(AppScreen.EditProfile.route)
+                    },
+                    onLogoutClick = {
+                        coroutineScope.launch {
+                            authRepository.cerrarSesion()
+                            profileImageUri = null
+                            profileUpdateError = null
+                            navController.navigate(AppScreen.Login.route) {
+                                popUpTo(AppScreen.Catalog.route) { inclusive = true }
+                            }
+                        }
+                    }
+                )
+            }
+        }
+        composable(AppScreen.EditProfile.route) {
+            val usuario = usuarioActual
+            if (usuario == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(AppScreen.Login.route) {
+                        popUpTo(AppScreen.Login.route) { inclusive = true }
+                    }
+                }
+            } else {
+                EditProfileScreen(
+                    user = usuario,
+                    onBackClick = { navController.popBackStack() },
+                    onChangePasswordClick = { navController.navigate(AppScreen.ChangePassword.route) },
+                    onSaveChanges = { newName, newEmail ->
+                        profileUpdateError = null
+                        coroutineScope.launch {
+                            try {
+                                authRepository.actualizarPerfil(newName, newEmail)
+                                navController.popBackStack()
+                            } catch (t: IllegalArgumentException) {
+                                profileUpdateError = t.message
+                            } catch (t: IllegalStateException) {
+                                profileUpdateError = t.message
+                            }
+                        }
+                    },
+                    errorMessage = profileUpdateError
+                )
+            }
+        }
+        composable(AppScreen.ChangePassword.route) {
+            if (usuarioActual == null) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(AppScreen.Login.route) {
+                        popUpTo(AppScreen.Login.route) { inclusive = true }
+                    }
+                }
+            } else {
+                ChangePasswordScreen(onBackClick = { navController.popBackStack() })
+            }
         }
         composable(
             route = AppScreen.ProductDetail.route,
