@@ -51,15 +51,12 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
-    // Coil para cargar imágenes
     implementation("io.coil-kt:coil-compose:2.5.0")
 
-    // Room (runtime + ktx) and compiler (kapt)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
 
-    // Navigation, ViewModel, and DataStore from guide
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.datastore.preferences)
