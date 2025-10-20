@@ -26,7 +26,8 @@ class MainActivity : ComponentActivity() {
                 val authRepository = remember { AuthRepository() }
                 LevelUpNavHost(
                     productosVm = productosVm,
-                    authRepository = authRepository
+                    authRepository = authRepository,
+                    database = database
                 )
             }
         }

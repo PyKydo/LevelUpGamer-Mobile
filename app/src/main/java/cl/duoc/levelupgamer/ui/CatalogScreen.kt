@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -19,7 +23,11 @@ import cl.duoc.levelupgamer.model.Producto
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CatalogScreen(products: List<Producto>, onProductClick: (Producto) -> Unit) {
+fun CatalogScreen(
+    products: List<Producto>,
+    onProductClick: (Producto) -> Unit,
+    onViewCart: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -27,7 +35,16 @@ fun CatalogScreen(products: List<Producto>, onProductClick: (Producto) -> Unit) 
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.secondary, // Verde Neón
                     titleContentColor = MaterialTheme.colorScheme.onSecondary // Texto negro para contraste
-                )
+                ),
+                actions = {
+                    IconButton(onClick = onViewCart) {
+                        Icon(
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = "Ver carrito",
+                            tint = MaterialTheme.colorScheme.onSecondary
+                        )
+                    }
+                }
             )
         }
     ) {
