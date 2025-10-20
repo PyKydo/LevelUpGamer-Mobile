@@ -16,13 +16,13 @@ interface CarritoItemDao {
     suspend fun obtenerPorUsuarioYProducto(usuarioId: Long, productoId: Long): CarritoItemEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertar(entity: CarritoItemEntity): Long
+    suspend fun insertar(item: CarritoItemEntity): Long
 
     @Update
-    suspend fun actualizar(entity: CarritoItemEntity)
+    suspend fun actualizar(item: CarritoItemEntity)
 
     @Delete
-    suspend fun eliminar(entity: CarritoItemEntity)
+    suspend fun eliminar(item: CarritoItemEntity)
 
     @Query("DELETE FROM carrito_items WHERE usuarioId = :usuarioId")
     suspend fun eliminarPorUsuario(usuarioId: Long)
