@@ -2,6 +2,7 @@ package cl.duoc.levelupgamer.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,7 @@ import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -124,6 +126,7 @@ fun RegistrationScreen(
                 value = form.nombre,
                 onValueChange = vm::onChangeNombre,
                 label = { Text("Nombre") },
+                singleLine = true,
                 isError = form.nombreError != null,
                 supportingText = { form.nombreError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                 modifier = Modifier.fillMaxWidth()
@@ -135,6 +138,7 @@ fun RegistrationScreen(
                 value = form.email,
                 onValueChange = vm::onChangeEmail,
                 label = { Text("Email") },
+                singleLine = true,
                 isError = form.emailError != null,
                 supportingText = { form.emailError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                 modifier = Modifier.fillMaxWidth()
@@ -154,18 +158,24 @@ fun RegistrationScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = form.fechaNacimiento,
-                onValueChange = { },
-                label = { Text("Fecha de Nacimiento") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showDatePicker = true },
-                readOnly = true,
-                supportingText = {
-                    form.fechaNacimientoError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-                }
-            )
+            // Envolvemos el campo en un Box para que toda el área sea clicable
+            Box(modifier = Modifier.clickable { showDatePicker = true }) {
+                OutlinedTextField(
+                    value = form.fechaNacimiento,
+                    onValueChange = { },
+                    label = { Text("Fecha de Nacimiento") },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = false, // Desactivamos el campo para que el Box reciba el clic
+                    colors = OutlinedTextFieldDefaults.colors( // Le damos colores para que no parezca deshabilitado
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    supportingText = {
+                        form.fechaNacimientoError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
