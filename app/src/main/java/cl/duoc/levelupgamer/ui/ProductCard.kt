@@ -24,15 +24,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cl.duoc.levelupgamer.model.Producto
+import cl.duoc.levelupgamer.ui.resolveProductImageResId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductCard(producto: Producto, onClick: () -> Unit) {
     Card(
         onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(260.dp),
+        modifier = Modifier.fillMaxWidth(), // Se elimina la altura fija
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -46,7 +45,7 @@ fun ProductCard(producto: Producto, onClick: () -> Unit) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp)
+                    .height(180.dp) // La imagen mantiene su altura
                     .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
             ) {
                 Image(
@@ -57,14 +56,16 @@ fun ProductCard(producto: Producto, onClick: () -> Unit) {
                 )
             }
             Column(modifier = Modifier.padding(16.dp)) {
+                // Se le da una altura mínima al nombre para que siempre ocupe dos líneas
                 Text(
                     text = producto.nombre,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
+                    minLines = 2, 
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp)) // Espacio consistente
                 Text(
                     text = "$${producto.precio}",
                     style = MaterialTheme.typography.bodyMedium,
@@ -74,4 +75,3 @@ fun ProductCard(producto: Producto, onClick: () -> Unit) {
         }
     }
 }
-
