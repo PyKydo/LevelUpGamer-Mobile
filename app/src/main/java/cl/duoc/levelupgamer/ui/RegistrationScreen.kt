@@ -124,6 +124,7 @@ fun RegistrationScreen(
                 value = form.nombre,
                 onValueChange = vm::onChangeNombre,
                 label = { Text("Nombre") },
+                singleLine = true,
                 isError = form.nombreError != null,
                 supportingText = { form.nombreError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                 modifier = Modifier.fillMaxWidth()
@@ -135,6 +136,7 @@ fun RegistrationScreen(
                 value = form.email,
                 onValueChange = vm::onChangeEmail,
                 label = { Text("Email") },
+                singleLine = true,
                 isError = form.emailError != null,
                 supportingText = { form.emailError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                 modifier = Modifier.fillMaxWidth()
