@@ -23,18 +23,24 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cl.duoc.levelupgamer.model.Producto
 import cl.duoc.levelupgamer.model.local.CarritoItemEntity
+import cl.duoc.levelupgamer.service.NotificationService
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +59,9 @@ fun ShoppingCartScreen(
         }
     }
     val totalPrice = lineItems.sumOf { it.producto.precio * it.item.cantidad }
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -69,7 +78,8 @@ fun ShoppingCartScreen(
                     navigationIconContentColor = MaterialTheme.colorScheme.onSecondary
                 )
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) } // Contenedor para los mensajes
     ) {
         if (lineItems.isEmpty()) {
             Box(
@@ -131,7 +141,19 @@ fun ShoppingCartScreen(
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
-                            onClick = onCheckout,
+                            onClick = {
+                                // 1. Muestra el mensaje en pantalla
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Compra completada")
+                                }
+
+                                // 2. Mantiene la notificación del sistema
+                                val notificationService = NotificationService(context)
+                                notificationService.mostrarNotificacionCompraExitosa()
+                                
+                                // 3. Ejecuta la acción de compra original
+                                onCheckout()
+                            },
                             enabled = lineItems.isNotEmpty(),
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
