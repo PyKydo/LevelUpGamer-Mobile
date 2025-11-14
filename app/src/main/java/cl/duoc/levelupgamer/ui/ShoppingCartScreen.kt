@@ -29,8 +29,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -40,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import cl.duoc.levelupgamer.model.Producto
 import cl.duoc.levelupgamer.model.local.CarritoItemEntity
 import cl.duoc.levelupgamer.service.NotificationService
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,6 +66,7 @@ fun ShoppingCartScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    var isCheckingOut by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -79,13 +84,13 @@ fun ShoppingCartScreen(
                 )
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) } // Contenedor para los mensajes
-    ) {
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { paddingValues ->
         if (lineItems.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(it),
+                    .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -98,7 +103,7 @@ fun ShoppingCartScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(it)
+                    .padding(paddingValues)
             ) {
                 LazyColumn(
                     modifier = Modifier.weight(1f),
@@ -142,19 +147,21 @@ fun ShoppingCartScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = {
-                                // 1. Muestra el mensaje en pantalla
+                                isCheckingOut = true
                                 scope.launch {
+                                    val notificationService = NotificationService(context)
+                                    notificationService.mostrarNotificacionCompraExitosa()
+                                    
+                                    onCheckout()
+                                    
                                     snackbarHostState.showSnackbar("Compra completada")
-                                }
+                                    
+                                    delay(1000)
 
-                                // 2. Mantiene la notificación del sistema
-                                val notificationService = NotificationService(context)
-                                notificationService.mostrarNotificacionCompraExitosa()
-                                
-                                // 3. Ejecuta la acción de compra original
-                                onCheckout()
+                                    onBack()
+                                }
                             },
-                            enabled = lineItems.isNotEmpty(),
+                            enabled = lineItems.isNotEmpty() && !isCheckingOut,
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.secondary

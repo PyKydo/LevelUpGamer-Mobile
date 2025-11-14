@@ -128,7 +128,8 @@ fun LevelUpNavHost(
                                 popUpTo(AppScreen.Catalog.route) { inclusive = true }
                             }
                         }
-                    }
+                    },
+                    onBackClick = { navController.popBackStack() }
                 )
             }
         }
@@ -222,10 +223,7 @@ fun LevelUpNavHost(
                         }
                     },
                     onRemoveItem = vm::eliminar,
-                    onCheckout = {
-                        vm.limpiar()
-                        navController.popBackStack()
-                    }
+                    onCheckout = { vm.limpiar() }
                 )
             }
         }
