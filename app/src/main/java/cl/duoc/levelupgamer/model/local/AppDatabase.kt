@@ -54,6 +54,34 @@ abstract class AppDatabase : RoomDatabase() {
                                 }
                             }
                         }
+
+                        override fun onOpen(db: SupportSQLiteDatabase) {
+                            super.onOpen(db)
+                            // Si la base de datos ya existía y está vacía, aseguramos pre-poblado.
+                            Executors.newSingleThreadExecutor().execute {
+                                val cursor = db.query("SELECT COUNT(*) FROM productos", emptyArray<Any?>())
+                                var count = 0
+                                if (cursor.moveToFirst()) {
+                                    count = cursor.getInt(0)
+                                }
+                                cursor.close()
+                                if (count == 0) {
+                                    PREPOPULATE_DATA.forEach { producto ->
+                                        db.execSQL(
+                                            "INSERT INTO productos (nombre, descripcion, precio, imageUrl, categoria, codigo) VALUES (?, ?, ?, ?, ?, ?)",
+                                            arrayOf(
+                                                producto.nombre,
+                                                producto.descripcion,
+                                                producto.precio,
+                                                producto.imageUrl,
+                                                producto.categoria,
+                                                producto.codigo
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     })
                     .build()
                 INSTANCE = db
