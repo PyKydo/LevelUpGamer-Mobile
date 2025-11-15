@@ -7,7 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cl.duoc.levelupgamer.model.local.AppDatabase
-import cl.duoc.levelupgamer.model.repository.AuthRepository
+import cl.duoc.levelupgamer.model.repository.UsuarioRepository
 import cl.duoc.levelupgamer.ui.navigation.LevelUpNavHost
 import cl.duoc.levelupgamer.ui.theme.LevelUpGamerTheme
 import cl.duoc.levelupgamer.viewmodel.ProductoViewModel
@@ -23,10 +23,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             LevelUpGamerTheme {
                 val productosVm: ProductoViewModel = viewModel(factory = ProductoViewModelFactory(database))
-                val authRepository = remember { AuthRepository() }
+                val usuarioRepository = remember { UsuarioRepository(database.usuarioDao()) }
                 LevelUpNavHost(
                     productosVm = productosVm,
-                    authRepository = authRepository,
+                    usuarioRepository = usuarioRepository,
                     database = database
                 )
             }

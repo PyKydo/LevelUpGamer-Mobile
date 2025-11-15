@@ -1,11 +1,17 @@
 package cl.duoc.levelupgamer.model.local.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
 import cl.duoc.levelupgamer.model.Usuario
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UsuarioDao {
+
     @Query("SELECT * FROM usuarios ORDER BY id DESC")
     fun observarTodos(): Flow<List<Usuario>>
 

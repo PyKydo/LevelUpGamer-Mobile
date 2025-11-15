@@ -17,7 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import cl.duoc.levelupgamer.model.local.AppDatabase
-import cl.duoc.levelupgamer.model.repository.InAuthRepository
+import cl.duoc.levelupgamer.model.repository.UsuarioRepository
 import cl.duoc.levelupgamer.ui.CatalogScreen
 import cl.duoc.levelupgamer.ui.ChangePasswordScreen
 import cl.duoc.levelupgamer.ui.EditProfileScreen
@@ -28,6 +28,8 @@ import cl.duoc.levelupgamer.ui.RegistrationScreen
 import cl.duoc.levelupgamer.ui.ShoppingCartScreen
 import cl.duoc.levelupgamer.viewmodel.CarritoViewModel
 import cl.duoc.levelupgamer.viewmodel.CarritoViewModelFactory
+import cl.duoc.levelupgamer.viewmodel.ChangePasswordViewModel
+import cl.duoc.levelupgamer.viewmodel.ChangePasswordViewModelFactory
 import cl.duoc.levelupgamer.viewmodel.LoginViewModel
 import cl.duoc.levelupgamer.viewmodel.LoginViewModelFactory
 import cl.duoc.levelupgamer.viewmodel.ProductoViewModel
@@ -38,12 +40,12 @@ import kotlinx.coroutines.launch
 @Composable
 fun LevelUpNavHost(
     productosVm: ProductoViewModel,
-    authRepository: InAuthRepository,
+    usuarioRepository: UsuarioRepository,
     database: AppDatabase,
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
-    val usuarioActual by authRepository.usuarioActual.collectAsState(initial = null)
+    val usuarioActual by usuarioRepository.usuarioActual.collectAsState(initial = null)
     val carritoVm: CarritoViewModel? = usuarioActual?.let { usuario ->
         viewModel(
             key = "carrito_vm_${usuario.id}",
@@ -71,7 +73,7 @@ fun LevelUpNavHost(
             )
         }
         composable(AppScreen.Login.route) {
-            val vm: LoginViewModel = viewModel(factory = LoginViewModelFactory(authRepository))
+            val vm: LoginViewModel = viewModel(factory = LoginViewModelFactory(usuarioRepository))
             LoginScreen(
                 vm = vm,
                 onRegisterClick = { navController.navigate(AppScreen.Register.route) },
@@ -83,7 +85,7 @@ fun LevelUpNavHost(
             )
         }
         composable(AppScreen.Register.route) {
-            val vm: RegistrationViewModel = viewModel(factory = RegistrationViewModelFactory(authRepository))
+            val vm: RegistrationViewModel = viewModel(factory = RegistrationViewModelFactory(usuarioRepository))
             RegistrationScreen(
                 vm = vm,
                 onRegistered = { navController.popBackStack() },
@@ -121,7 +123,7 @@ fun LevelUpNavHost(
                     },
                     onLogoutClick = {
                         coroutineScope.launch {
-                            authRepository.cerrarSesion()
+                            usuarioRepository.cerrarSesion()
                             profileImageUri = null
                             profileUpdateError = null
                             navController.navigate(AppScreen.Login.route) {
@@ -150,7 +152,7 @@ fun LevelUpNavHost(
                         profileUpdateError = null
                         coroutineScope.launch {
                             try {
-                                authRepository.actualizarPerfil(newName, newEmail)
+                                usuarioRepository.actualizarPerfil(newName, newEmail)
                                 navController.popBackStack()
                             } catch (t: IllegalArgumentException) {
                                 profileUpdateError = t.message
@@ -171,7 +173,11 @@ fun LevelUpNavHost(
                     }
                 }
             } else {
-                ChangePasswordScreen(onBackClick = { navController.popBackStack() })
+                val vm: ChangePasswordViewModel = viewModel(factory = ChangePasswordViewModelFactory(usuarioRepository))
+                ChangePasswordScreen(
+                    vm = vm,
+                    onBackClick = { navController.popBackStack() }
+                )
             }
         }
         composable(

@@ -11,23 +11,50 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import cl.duoc.levelupgamer.viewmodel.ChangePasswordViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChangePasswordScreen(onBackClick: () -> Unit) {
+fun ChangePasswordScreen(
+    vm: ChangePasswordViewModel,
+    onBackClick: () -> Unit
+) {
+    val uiState by vm.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.success) {
+        if (uiState.success) {
+            snackbarHostState.showSnackbar("Contraseña actualizada con éxito")
+            onBackClick()
+        }
+    }
+
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            snackbarHostState.showSnackbar(it)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -43,7 +70,8 @@ fun ChangePasswordScreen(onBackClick: () -> Unit) {
                     navigationIconContentColor = MaterialTheme.colorScheme.onSecondary
                 )
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) {
         Column(
             modifier = Modifier
@@ -53,36 +81,44 @@ fun ChangePasswordScreen(onBackClick: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = uiState.currentPassword,
+                onValueChange = vm::onCurrentPasswordChange,
                 label = { Text("Contraseña Actual") },
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation()
+                visualTransformation = PasswordVisualTransformation(),
+                singleLine = true
             )
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = uiState.newPassword,
+                onValueChange = vm::onNewPasswordChange,
                 label = { Text("Nueva Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation()
+                visualTransformation = PasswordVisualTransformation(),
+                singleLine = true
             )
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = uiState.confirmPassword,
+                onValueChange = vm::onConfirmPasswordChange,
                 label = { Text("Confirmar Nueva Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation()
+                visualTransformation = PasswordVisualTransformation(),
+                singleLine = true
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = onBackClick, 
+                onClick = { vm.changePassword() },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isLoading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondary,
                     contentColor = MaterialTheme.colorScheme.onSecondary
                 )
             ) {
-                Text("Actualizar Contraseña")
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onSecondary)
+                } else {
+                    Text("Actualizar Contraseña")
+                }
             }
         }
     }
