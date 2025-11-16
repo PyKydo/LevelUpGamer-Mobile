@@ -158,6 +158,18 @@ fun RegistrationScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            OutlinedTextField(
+                value = form.contrasenaConfirm,
+                onValueChange = vm::onChangeContrasenaConfirm,
+                label = { Text("Confirmar contraseña") },
+                visualTransformation = PasswordVisualTransformation(),
+                isError = form.contrasenaConfirmError != null,
+                supportingText = { form.contrasenaConfirmError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             // Envolvemos el campo en un Box para que toda el área sea clicable
             Box(modifier = Modifier.clickable { showDatePicker = true }) {
                 OutlinedTextField(

@@ -18,11 +18,13 @@ data class RegistrationFormState(
     val nombre: String = "",
     val email: String = "",
     val contrasena: String = "",
+    val contrasenaConfirm: String = "",
     val fechaNacimiento: String = "",
 
     val nombreError: String? = null,
     val emailError: String? = null,
     val contrasenaError: String? = null,
+    val contrasenaConfirmError: String? = null,
     val fechaNacimientoError: String? = null,
 
     val error: String? = null,
@@ -44,6 +46,9 @@ class RegistrationViewModel(private val authRepository: InAuthRepository) : View
     fun onChangeContrasena(v: String) =
         _form.update { it.copy(contrasena = v, contrasenaError = null, error = null) }
 
+    fun onChangeContrasenaConfirm(v: String) =
+        _form.update { it.copy(contrasenaConfirm = v, contrasenaConfirmError = null, error = null) }
+
     fun onChangeFechaNacimiento(v: String) =
         _form.update { it.copy(fechaNacimiento = v, fechaNacimientoError = null, error = null) }
 
@@ -56,6 +61,7 @@ class RegistrationViewModel(private val authRepository: InAuthRepository) : View
         val nombre = current.nombre.trim()
         val email = current.email.trim()
         val contrasena = current.contrasena
+        val contrasenaConfirm = current.contrasenaConfirm
         val fechaNacimiento = current.fechaNacimiento.trim()
 
         var hasError = false
@@ -89,6 +95,19 @@ class RegistrationViewModel(private val authRepository: InAuthRepository) : View
             hasError = true
             val msg = "La contraseña debe tener 8+ caracteres, mayúscula, minúscula, dígito y símbolo."
             _form.update { it.copy(contrasenaError = msg) }
+            if (firstError == null) firstError = msg
+        }
+
+        // Validación de confirmación de contraseña
+        if (contrasenaConfirm.isBlank()) {
+            hasError = true
+            val msg = "Debes confirmar la contraseña"
+            _form.update { it.copy(contrasenaConfirmError = msg) }
+            if (firstError == null) firstError = msg
+        } else if (contrasena != contrasenaConfirm) {
+            hasError = true
+            val msg = "Las contraseñas no coinciden"
+            _form.update { it.copy(contrasenaConfirmError = msg) }
             if (firstError == null) firstError = msg
         }
 
