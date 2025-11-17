@@ -1,15 +1,14 @@
 package cl.duoc.levelupgamer.model
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
-@Entity(tableName = "usuarios")
 data class Usuario(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val id: Long,
     val nombre: String,
+    val apellido: String? = null,
     val email: String,
-    val contrasena: String, // Campo añadido
-    val fechaNacimiento: String,
+    val rol: String? = null,
+    val fechaNacimiento: String = "",
     val fotoPerfilUrl: String? = null,
-    val direccion: String? = null
+    val direccion: String? = null,
+    val telefono: String? = null,
+    val puntos: Int = 0
 )

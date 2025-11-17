@@ -18,6 +18,9 @@ interface CarritoItemDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(item: CarritoItemEntity): Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertar(items: List<CarritoItemEntity>)
+
     @Update
     suspend fun actualizar(item: CarritoItemEntity)
 
@@ -26,4 +29,15 @@ interface CarritoItemDao {
 
     @Query("DELETE FROM carrito_items WHERE usuarioId = :usuarioId")
     suspend fun eliminarPorUsuario(usuarioId: Long)
+
+    @Query("DELETE FROM carrito_items WHERE usuarioId = :usuarioId AND productoId = :productoId")
+    suspend fun eliminarPorUsuarioYProducto(usuarioId: Long, productoId: Long)
+
+    @Transaction
+    suspend fun reemplazarCarrito(usuarioId: Long, nuevos: List<CarritoItemEntity>) {
+        eliminarPorUsuario(usuarioId)
+        if (nuevos.isNotEmpty()) {
+            insertar(nuevos)
+        }
+    }
 }

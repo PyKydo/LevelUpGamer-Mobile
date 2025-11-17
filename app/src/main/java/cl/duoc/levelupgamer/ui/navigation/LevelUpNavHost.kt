@@ -16,7 +16,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import cl.duoc.levelupgamer.model.local.AppDatabase
+import cl.duoc.levelupgamer.model.repository.CarritoRepository
+import cl.duoc.levelupgamer.model.repository.PedidoRepository
 import cl.duoc.levelupgamer.model.repository.UsuarioRepository
 import cl.duoc.levelupgamer.ui.CatalogScreen
 import cl.duoc.levelupgamer.ui.ChangePasswordScreen
@@ -41,7 +42,8 @@ import kotlinx.coroutines.launch
 fun LevelUpNavHost(
     productosVm: ProductoViewModel,
     usuarioRepository: UsuarioRepository,
-    database: AppDatabase,
+    carritoRepository: CarritoRepository,
+    pedidoRepository: PedidoRepository,
     modifier: Modifier = Modifier
 ) {
     val navController = rememberNavController()
@@ -49,7 +51,12 @@ fun LevelUpNavHost(
     val carritoVm: CarritoViewModel? = usuarioActual?.let { usuario ->
         viewModel(
             key = "carrito_vm_${usuario.id}",
-            factory = CarritoViewModelFactory(database, usuario.id)
+            factory = CarritoViewModelFactory(
+                repo = carritoRepository,
+                pedidoRepository = pedidoRepository,
+                usuarioRepository = usuarioRepository,
+                usuarioId = usuario.id
+            )
         )
     }
     var profileImageUri by remember(usuarioActual?.id) {
@@ -64,9 +71,11 @@ fun LevelUpNavHost(
         modifier = modifier
     ) {
         composable(AppScreen.Splash.route) {
+            val isLoggedIn = usuarioActual != null
             SplashScreen(
                 onTimeout = {
-                    navController.navigate(AppScreen.Login.route) {
+                    val destination = if (isLoggedIn) AppScreen.Catalog.route else AppScreen.Login.route
+                    navController.navigate(destination) {
                         popUpTo(AppScreen.Splash.route) { inclusive = true }
                     }
                 }
@@ -217,11 +226,15 @@ fun LevelUpNavHost(
                     }
                 }
             } else {
+                val usuario = usuarioActual
                 val productos by productosVm.productos.collectAsState()
                 val items by vm.items.collectAsState()
+                val checkoutState by vm.checkoutState.collectAsState()
                 ShoppingCartScreen(
                     items = items,
                     productos = productos,
+                    initialAddress = usuario?.direccion,
+                    checkoutState = checkoutState,
                     onBack = { navController.popBackStack() },
                     onChangeQuantity = { itemId, newQuantity ->
                         if (newQuantity >= 1) {
@@ -229,7 +242,11 @@ fun LevelUpNavHost(
                         }
                     },
                     onRemoveItem = vm::eliminar,
-                    onCheckout = { vm.limpiar() }
+                    onCheckout = vm::realizarCheckout,
+                    onCheckoutStateConsumed = vm::consumirResultadoCheckout,
+                    onCheckoutSuccess = {
+                        navController.popBackStack()
+                    }
                 )
             }
         }

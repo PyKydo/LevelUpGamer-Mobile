@@ -1,35 +1,50 @@
 # LevelUpGamer - Aplicación Móvil
 
-Aplicación de e-commerce para Android desarrollada bajo el ecosistema de Jetpack Compose. El proyecto implementa un flujo de autenticación de usuarios, navegación entre pantallas y gestión de perfiles con persistencia de datos local.
+Aplicación Android (Jetpack Compose + MVVM) para la tienda LevelUpGamer. El cliente móvil consume el backend REST oficial: maneja autenticación JWT, sincroniza catálogo/carrito, envía pedidos reales y refleja el balance de puntos de fidelización del usuario.
 
-## Funcionalidades
+## Funcionalidades Clave
 
--   **Autenticación:** Sistema de registro e inicio de sesión con persistencia local.
--   **Gestión de Perfil:** Visualización, edición y cambio de contraseña del perfil de usuario.
--   **Navegación:** Flujo de navegación con Jetpack Navigation Compose, incluyendo transiciones animadas entre pantallas.
--   **Persistencia de Datos:** Implementación de base de datos local con Room y gestión de estado de sesión a través del patrón Repository.
--   **Catálogo:** Muestra de un catálogo de productos con datos de ejemplo y pantalla de detalle.
+- **Autenticación segura:** Registro, login y refresco de tokens con almacenamiento cifrado (`EncryptedSharedPreferences`). La sesión se restaura automáticamente al abrir la app.
+- **Catálogo sincronizado:** Productos y detalles se obtienen desde `/api/products` y se cachean en Room para navegación offline básica.
+- **Carrito en línea + checkout:** Cada operación (agregar, actualizar, eliminar) impacta el carrito del backend. El botón *Finalizar compra* crea un pedido vía `/api/orders`, limpia el carrito y dispara la notificación local.
+- **Perfil y puntos:** El perfil usa `/api/users/{id}` y muestra los puntos acumulados. Tras cada compra la app fuerza `refreshPerfil()` para reflejar los nuevos puntos.
+- **Notificaciones y experiencia Compose:** UI Material 3, navegación declarativa y notificación local cuando un pedido se confirma.
 
-## Stack Tecnológico
+## Configuración del Backend
 
--   **Lenguaje:** Kotlin
--   **UI:** Jetpack Compose
--   **Navegación:** Jetpack Navigation Compose
--   **Base de Datos:** Room
--   **Arquitectura:** Basada en principios de MVVM.
+La app lee la URL base desde `BuildConfig.API_BASE_URL`. Por defecto apunta a `http://10.0.2.2:8080/` (localhost expuesto al emulador). Puedes sobrescribirla añadiendo a `local.properties` o ejecutando Gradle con la propiedad `LEVELUP_API_URL`:
 
-## Integrantes
+```properties
+LEVELUP_API_URL=https://mi-backend.example.com/
+```
 
-    Matias Guiterres 
-    Victor Mena
-    David Larenas
+> Incluye la barra final y asegúrate de que el backend exponga los endpoints descritos en `docs/Documentación del Backend.md`.
 
 ## Ejecución
 
-1.  **Clonar:** Clonar el repositorio utilizando la URL de GitHub.
-    ```bash
-    git clone [https://github.com/PyKydo/LevelUpGamer-Mobile.git]
-    ```
-2.  **Abrir:** Abrir el proyecto en Android Studio (versión recomendada: Hedgehog o superior).
-3.  **Sincronizar:** Esperar la sincronización de Gradle o iniciarla manualmente (`File > Sync Project with Gradle Files`).
-4.  **Ejecutar:** Seleccionar un dispositivo (emulador o físico) y ejecutar la configuración 'app'.
+1. **Clonar:**
+
+   ```bash
+   git clone https://github.com/PyKydo/LevelUpGamer-Mobile.git
+   ```
+
+2. **Abrir en Android Studio** (Hedgehog o superior) y sincronizar Gradle.
+3. **Configurar la URL** si no usarás `10.0.2.2`.
+4. **Ejecutar la app** en un emulador/dispositivo (Android 8.0+). El primer arranque descargará dependencias desde Maven Central.
+
+## Testing
+
+Ejecuta las pruebas unitarias (Kotest + JUnit5 + MockK) desde el proyecto raíz:
+
+```bash
+./gradlew test        # macOS/Linux
+.\gradlew.bat test    # Windows
+```
+
+> La primera ejecución puede tardar por la descarga de `retrofit:2.11.0` y otras dependencias. Si falla por timeout vuelve a lanzar el comando.
+
+## Integrantes
+
+- Matías Gutiérrez
+- Víctor Mena
+- David Larenas

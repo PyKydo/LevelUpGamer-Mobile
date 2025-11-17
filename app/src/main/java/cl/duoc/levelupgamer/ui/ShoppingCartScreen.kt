@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -18,10 +19,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -29,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cl.duoc.levelupgamer.model.Producto
 import cl.duoc.levelupgamer.model.local.CarritoItemEntity
+import cl.duoc.levelupgamer.viewmodel.CheckoutUiState
 import cl.duoc.levelupgamer.service.NotificationService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -51,10 +56,14 @@ import kotlinx.coroutines.launch
 fun ShoppingCartScreen(
     items: List<CarritoItemEntity>,
     productos: List<Producto>,
+    initialAddress: String?,
+    checkoutState: CheckoutUiState,
     onBack: () -> Unit,
     onChangeQuantity: (Long, Int) -> Unit,
     onRemoveItem: (Long) -> Unit,
-    onCheckout: () -> Unit
+    onCheckout: (String, String?) -> Unit,
+    onCheckoutStateConsumed: () -> Unit,
+    onCheckoutSuccess: () -> Unit
 ) {
     val lineItems = remember(items, productos) {
         items.mapNotNull { item ->
@@ -66,7 +75,27 @@ fun ShoppingCartScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    var isCheckingOut by remember { mutableStateOf(false) }
+    var direccionEnvio by remember(initialAddress) { mutableStateOf(initialAddress.orEmpty()) }
+    var notas by remember { mutableStateOf("") }
+    var direccionError by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(checkoutState.pedidoConfirmado) {
+        checkoutState.pedidoConfirmado?.let { pedido ->
+            NotificationService(context).mostrarNotificacionCompraExitosa()
+            snackbarHostState.showSnackbar("Pedido #${pedido.id} confirmado")
+            notas = ""
+            onCheckoutStateConsumed()
+            delay(1_000)
+            onCheckoutSuccess()
+        }
+    }
+
+    LaunchedEffect(checkoutState.error) {
+        checkoutState.error?.let { msg ->
+            snackbarHostState.showSnackbar(msg)
+            onCheckoutStateConsumed()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -121,6 +150,36 @@ fun ShoppingCartScreen(
                         )
                     }
                 }
+                if (lineItems.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = direccionEnvio,
+                        onValueChange = {
+                            direccionEnvio = it
+                            if (direccionError != null) direccionError = null
+                        },
+                        label = { Text("Dirección de envío") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        isError = direccionError != null,
+                        supportingText = {
+                            direccionError?.let { error ->
+                                Text(text = error, color = MaterialTheme.colorScheme.error)
+                            }
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = notas,
+                        onValueChange = { notas = it },
+                        label = { Text("Notas adicionales (opcional)") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        minLines = 2
+                    )
+                }
                 Spacer(modifier = Modifier.height(16.dp))
                 Card(
                     modifier = Modifier
@@ -147,27 +206,32 @@ fun ShoppingCartScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = {
-                                isCheckingOut = true
-                                scope.launch {
-                                    val notificationService = NotificationService(context)
-                                    notificationService.mostrarNotificacionCompraExitosa()
-                                    
-                                    onCheckout()
-                                    
-                                    snackbarHostState.showSnackbar("Compra completada")
-                                    
-                                    delay(1000)
-
-                                    onBack()
+                                direccionError = null
+                                val trimmedAddress = direccionEnvio.trim()
+                                if (trimmedAddress.isBlank()) {
+                                    direccionError = "Ingresa una dirección de envío"
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("La dirección de envío es obligatoria")
+                                    }
+                                } else {
+                                    onCheckout(trimmedAddress, notas.ifBlank { null })
                                 }
                             },
-                            enabled = lineItems.isNotEmpty() && !isCheckingOut,
+                            enabled = lineItems.isNotEmpty() && !checkoutState.isProcessing,
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.secondary
                             )
                         ) {
-                            Text("Finalizar Compra", color = MaterialTheme.colorScheme.onSecondary)
+                            if (checkoutState.isProcessing) {
+                                CircularProgressIndicator(
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                    strokeWidth = 2.dp,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            } else {
+                                Text("Finalizar Compra", color = MaterialTheme.colorScheme.onSecondary)
+                            }
                         }
                     }
                 }

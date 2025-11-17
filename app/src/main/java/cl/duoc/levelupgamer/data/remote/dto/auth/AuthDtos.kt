@@ -1,0 +1,33 @@
+package cl.duoc.levelupgamer.data.remote.dto.auth
+
+import cl.duoc.levelupgamer.data.remote.dto.users.UsuarioRespuestaDto
+import com.google.gson.annotations.SerializedName
+
+data class LoginRequest(
+    val username: String,
+    val password: String
+)
+
+data class LoginResponse(
+    @SerializedName("token") val legacyToken: String? = null,
+    @SerializedName("accessToken") val accessToken: String? = null,
+    val refreshToken: String? = null,
+    val rol: String? = null,
+    val usuario: UsuarioRespuestaDto? = null
+)
+
+data class TokenRefreshRequest(
+    val refreshToken: String
+)
+
+data class TokenRefreshResponse(
+    val accessToken: String,
+    val refreshToken: String,
+    val usuario: UsuarioRespuestaDto? = null,
+    val rol: String? = null
+)
+
+data class ChangePasswordRequest(
+    val currentPassword: String,
+    val newPassword: String
+)

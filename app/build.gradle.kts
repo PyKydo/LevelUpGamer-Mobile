@@ -38,11 +38,6 @@ android {
     buildFeatures {
         compose = true
     }
-    testOptions {
-        unitTests.all {
-            it.useJUnitPlatform()
-        }
-    }
 }
 
 dependencies {
@@ -66,14 +61,14 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.datastore.preferences)
 
-    // Dependencias de Testing
-    testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
-    testImplementation("io.kotest:kotest-assertions-core:5.8.0")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
-    testImplementation("io.mockk:mockk:1.13.10")
-    testImplementation(libs.junit)
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.google.code.gson:gson:2.8.9")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
-    // Dependencias de Android Testing
+    testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
