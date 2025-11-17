@@ -67,16 +67,14 @@ class LoginViewModelTest : StringSpec({
     }
 
     "iniciarSesion con email incorrecto debe resultar en error" {
-        // Preparación
+
         coEvery { authRepository.iniciarSesion("not-exist@test.com", "123456") } throws IllegalStateException("Usuario no encontrado")
 
-        // Acción
         viewModel.onChangeEmail("not-exist@test.com")
         viewModel.onChangeContrasena("123456")
         viewModel.iniciarSesion()
         testDispatcher.scheduler.advanceUntilIdle()
 
-        // Verificación
         val uiState = viewModel.form.value
         uiState.isSuccess shouldBe false
         uiState.error shouldNotBe null

@@ -45,8 +45,7 @@ class ProductoViewModelTest : StringSpec({
             // 2. Acción
             val viewModel = ProductoViewModel(productoRepository)
 
-            // 3. Verificación: Se espera a que el StateFlow emita una lista no vacía.
-            // Se usa un timeout para evitar que el test se quede colgado indefinidamente si hay un error.
+            // 3. Verificación
             val productosState = withTimeoutOrNull(2000) { // Timeout de 2 segundos
                 viewModel.productos.first { it.isNotEmpty() }
             }
