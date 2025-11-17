@@ -23,6 +23,8 @@ class CarritoViewModelTest : StringSpec({
 
     val testDispatcher = StandardTestDispatcher()
     val carritoRepository: CarritoRepository = mockk(relaxed = true)
+    val pedidoRepository: cl.duoc.levelupgamer.model.repository.PedidoRepository = mockk(relaxed = true)
+    val usuarioRepository: cl.duoc.levelupgamer.model.repository.UsuarioRepository = mockk(relaxed = true)
     lateinit var viewModel: CarritoViewModel
 
     val usuarioIdEjemplo = 1L
@@ -30,7 +32,7 @@ class CarritoViewModelTest : StringSpec({
 
     beforeTest {
         Dispatchers.setMain(testDispatcher)
-        viewModel = CarritoViewModel(carritoRepository, usuarioIdEjemplo)
+        viewModel = CarritoViewModel(carritoRepository, pedidoRepository, usuarioRepository, usuarioIdEjemplo)
     }
 
     afterTest {
@@ -44,7 +46,7 @@ class CarritoViewModelTest : StringSpec({
             )
             coEvery { carritoRepository.observarCarrito(usuarioIdEjemplo) } returns flowOf(itemsDePrueba)
 
-            viewModel = CarritoViewModel(carritoRepository, usuarioIdEjemplo)
+            viewModel = CarritoViewModel(carritoRepository, pedidoRepository, usuarioRepository, usuarioIdEjemplo)
             
             // Corregido: Se ignora el valor inicial (emptyList) y se toma la primera emisión real
             val itemsObservados = viewModel.items.drop(1).first()
@@ -61,7 +63,7 @@ class CarritoViewModelTest : StringSpec({
             
             testDispatcher.scheduler.advanceUntilIdle()
 
-            coVerify(exactly = 1) { carritoRepository.agregarOIncrementar(usuarioIdEjemplo, productoIdEjemplo, cantidad) }
+            coVerify(exactly = 1) { carritoRepository.agregar(usuarioIdEjemplo, productoIdEjemplo, cantidad) }
         }
     }
 
@@ -74,7 +76,7 @@ class CarritoViewModelTest : StringSpec({
 
             testDispatcher.scheduler.advanceUntilIdle()
 
-            coVerify(exactly = 1) { carritoRepository.actualizarCantidad(itemId, nuevaCantidad) }
+            coVerify(exactly = 1) { carritoRepository.actualizarCantidad(usuarioIdEjemplo, itemId, nuevaCantidad) }
         }
     }
 
@@ -86,7 +88,7 @@ class CarritoViewModelTest : StringSpec({
 
             testDispatcher.scheduler.advanceUntilIdle()
 
-            coVerify(exactly = 1) { carritoRepository.eliminar(itemId) }
+            coVerify(exactly = 1) { carritoRepository.eliminarItem(usuarioIdEjemplo, itemId) }
         }
     }
 

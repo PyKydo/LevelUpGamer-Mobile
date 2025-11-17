@@ -34,12 +34,13 @@ class ProductoViewModelTest : StringSpec({
         runTest(testDispatcher) {
             // 1. Preparación
             val productoDao: ProductoDao = mockk()
+            val api: cl.duoc.levelupgamer.data.remote.api.LevelUpApi = mockk()
             val dummyProducts = listOf(
                 Producto(1, "Catan", "Juego de mesa", 29990.0, "", "Juegos de Mesa", "JM001"),
                 Producto(2, "PlayStation 5", "Consola de videojuegos", 549990.0, "", "Consolas", "CO001")
             )
             coEvery { productoDao.observarTodos() } returns flowOf(dummyProducts)
-            val productoRepository = ProductoRepository(productoDao)
+            val productoRepository = ProductoRepository(productoDao, api)
 
             // 2. Acción
             val viewModel = ProductoViewModel(productoRepository)

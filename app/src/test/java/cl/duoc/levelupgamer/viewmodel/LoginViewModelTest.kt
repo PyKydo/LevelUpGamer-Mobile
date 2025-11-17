@@ -18,17 +18,15 @@ import kotlinx.coroutines.test.setMain
 class LoginViewModelTest : StringSpec({
 
     val testDispatcher = StandardTestDispatcher()
-    val usuarioDao: UsuarioDao = mockk()
 
     lateinit var viewModel: LoginViewModel
-    lateinit var usuarioRepository: UsuarioRepository
+    val authRepository: cl.duoc.levelupgamer.model.repository.InAuthRepository = mockk()
 
     val dummyUser = Usuario(1, "David", "david@test.com", "123456", "01/01/1990")
 
     beforeTest {
         Dispatchers.setMain(testDispatcher)
-        usuarioRepository = UsuarioRepository(usuarioDao)
-        viewModel = LoginViewModel(usuarioRepository)
+        viewModel = LoginViewModel(authRepository)
     }
 
     afterTest {
@@ -37,7 +35,7 @@ class LoginViewModelTest : StringSpec({
 
     "iniciarSesion con credenciales correctas debe resultar en éxito" {
         // Preparación
-        coEvery { usuarioDao.obtenerPorEmail("david@test.com") } returns dummyUser
+        coEvery { authRepository.iniciarSesion("david@test.com", "123456") } returns dummyUser
 
         // Acción
         viewModel.onChangeEmail("david@test.com")
@@ -53,7 +51,7 @@ class LoginViewModelTest : StringSpec({
 
     "iniciarSesion con contraseña incorrecta debe resultar en error" {
         // Preparación
-        coEvery { usuarioDao.obtenerPorEmail("david@test.com") } returns dummyUser
+        coEvery { authRepository.iniciarSesion("david@test.com", "contraseña-incorrecta") } throws IllegalArgumentException("Contraseña incorrecta")
 
         // Acción
         viewModel.onChangeEmail("david@test.com")
@@ -70,7 +68,7 @@ class LoginViewModelTest : StringSpec({
 
     "iniciarSesion con email incorrecto debe resultar en error" {
         // Preparación
-        coEvery { usuarioDao.obtenerPorEmail("not-exist@test.com") } returns null
+        coEvery { authRepository.iniciarSesion("not-exist@test.com", "123456") } throws IllegalStateException("Usuario no encontrado")
 
         // Acción
         viewModel.onChangeEmail("not-exist@test.com")

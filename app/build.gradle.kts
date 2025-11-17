@@ -17,6 +17,25 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        val configuredUrl: String? = (project.findProperty("LEVELUP_API_URL") as? String)
+            ?.takeIf { it.isNotBlank() }
+
+        val host: String? = (project.findProperty("LEVELUP_API_HOST") as? String)
+            ?.takeIf { it.isNotBlank() }
+        val port: String? = (project.findProperty("LEVELUP_API_PORT") as? String)
+            ?.takeIf { it.isNotBlank() }
+
+        val apiBaseUrl: String = configuredUrl
+            ?: host?.let { h ->
+                val p = port?.let { ":$it" } ?: ""
+                val hasScheme = h.startsWith("http://") || h.startsWith("https://")
+                val scheme = if (hasScheme) "" else "https://"
+                "$scheme$h$p/"
+            }
+            ?: "http://10.0.2.2:8080/"
+
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
     buildTypes {
@@ -37,6 +56,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -69,10 +89,21 @@ dependencies {
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     testImplementation(libs.junit)
+    // Unit test libraries
+    testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
+    testImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+// Use JUnit Platform for Kotest (JUnit5) tests
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
