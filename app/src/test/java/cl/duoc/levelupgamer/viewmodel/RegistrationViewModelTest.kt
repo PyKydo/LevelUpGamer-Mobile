@@ -31,14 +31,12 @@ class RegistrationViewModelTest : StringSpec({
 
     "El registro debe ser exitoso con datos válidos" {
         runTest(testDispatcher) {
-            // 1. Preparación
+
             val usuarioRepository: UsuarioRepository = mockk()
             val dummyUser = Usuario(1, "Nuevo Usuario", "nuevo@test.com", "ValidPass123!", "01/01/2000")
-            // Se actualiza la firma para que coincida con los 10 parámetros
             coEvery { usuarioRepository.registrar(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns dummyUser
             val viewModel = RegistrationViewModel(usuarioRepository)
 
-            // 2. Acción
             viewModel.onChangeNombre("Nuevo Usuario")
             viewModel.onChangeRun("11.111.111-1")
             viewModel.onChangeApellido("Test")
@@ -53,7 +51,6 @@ class RegistrationViewModelTest : StringSpec({
             viewModel.registrar()
             advanceUntilIdle()
 
-            // 3. Verificación
             val uiState = viewModel.form.value
             uiState.isSuccess shouldBe true
             uiState.error shouldBe null
@@ -62,14 +59,11 @@ class RegistrationViewModelTest : StringSpec({
 
     "El registro debe fallar si el email ya existe" {
         runTest(testDispatcher) {
-            // 1. Preparación
             val usuarioRepository: UsuarioRepository = mockk()
             val errorMessage = "El email ya está registrado"
-            // Se actualiza la firma para que coincida con los 10 parámetros
             coEvery { usuarioRepository.registrar(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws IllegalArgumentException(errorMessage)
             val viewModel = RegistrationViewModel(usuarioRepository)
 
-            // 2. Acción
             viewModel.onChangeNombre("Otro Usuario")
             viewModel.onChangeRun("22.222.222-2")
             viewModel.onChangeApellido("Prueba")
@@ -84,7 +78,6 @@ class RegistrationViewModelTest : StringSpec({
             viewModel.registrar()
             advanceUntilIdle()
 
-            // 3. Verificación
             val uiState = viewModel.form.value
             uiState.isSuccess shouldBe false
             uiState.error shouldBe errorMessage
@@ -93,11 +86,9 @@ class RegistrationViewModelTest : StringSpec({
 
     "El registro debe fallar si la contraseña es inválida" {
         runTest(testDispatcher) {
-            // 1. Preparación
             val usuarioRepository: UsuarioRepository = mockk(relaxed = true)
             val viewModel = RegistrationViewModel(usuarioRepository)
 
-            // 2. Acción
             viewModel.onChangeNombre("Test")
             viewModel.onChangeRun("11.111.111-1")
             viewModel.onChangeApellido("Apellido")
@@ -112,23 +103,19 @@ class RegistrationViewModelTest : StringSpec({
             viewModel.registrar()
             advanceUntilIdle()
 
-            // 3. Verificación
             val uiState = viewModel.form.value
             uiState.isSuccess shouldBe false
             uiState.contrasenaError shouldNotBe null
-            // Se actualiza la firma para que coincida con los 10 parámetros
             coVerify(exactly = 0) { usuarioRepository.registrar(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
         }
     }
 
     "El registro debe fallar si el usuario es menor de edad" {
         runTest(testDispatcher) {
-            // 1. Preparación
             val usuarioRepository: UsuarioRepository = mockk(relaxed = true)
             val viewModel = RegistrationViewModel(usuarioRepository)
             val fechaMenorDeEdad = java.time.LocalDate.now().minusYears(17).format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
 
-            // 2. Acción
             viewModel.onChangeNombre("Joven Usuario")
             viewModel.onChangeRun("33.333.333-3")
             viewModel.onChangeApellido("Menor")
@@ -143,11 +130,35 @@ class RegistrationViewModelTest : StringSpec({
             viewModel.registrar()
             advanceUntilIdle()
 
-            // 3. Verificación
             val uiState = viewModel.form.value
             uiState.isSuccess shouldBe false
             uiState.fechaNacimientoError shouldBe "Debes tener al menos 18 años."
-            // Se actualiza la firma para que coincida con los 10 parámetros
+            coVerify(exactly = 0) { usuarioRepository.registrar(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
+        }
+    }
+
+    "El registro debe fallar si el RUN es inválido" {
+        runTest(testDispatcher) {
+            val usuarioRepository: UsuarioRepository = mockk(relaxed = true)
+            val viewModel = RegistrationViewModel(usuarioRepository)
+
+            viewModel.onChangeNombre("Nombre Valido")
+            viewModel.onChangeApellido("Apellido Valido")
+            viewModel.onChangeEmail("email.valido@test.com")
+            viewModel.onChangeContrasena("ValidPass123!")
+            viewModel.onChangeContrasenaConfirm("ValidPass123!")
+            viewModel.onChangeFechaNacimiento("01/01/2000")
+            viewModel.onChangeRegion("Metropolitana")
+            viewModel.onChangeComuna("Santiago")
+            viewModel.onChangeDireccion("Av. Siempre Viva 123")
+            viewModel.onChangeAceptaTerminos(true)
+            viewModel.onChangeRun("11.111.111-2") 
+            viewModel.registrar()
+            advanceUntilIdle()
+
+            val uiState = viewModel.form.value
+            uiState.isSuccess shouldBe false
+            uiState.runError shouldBe "El RUN no es válido"
             coVerify(exactly = 0) { usuarioRepository.registrar(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
         }
     }

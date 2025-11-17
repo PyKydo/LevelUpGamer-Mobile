@@ -3,6 +3,7 @@ package cl.duoc.levelupgamer.repository
 import cl.duoc.levelupgamer.data.remote.api.LevelUpApi
 import cl.duoc.levelupgamer.data.remote.dto.auth.LoginResponse
 import cl.duoc.levelupgamer.data.remote.dto.users.UsuarioRespuestaDto
+import cl.duoc.levelupgamer.data.session.TokenSession
 import cl.duoc.levelupgamer.data.session.TokenStore
 import cl.duoc.levelupgamer.model.repository.UsuarioRepository
 import io.kotest.core.spec.style.StringSpec
@@ -18,78 +19,89 @@ import kotlinx.coroutines.test.runTest
 @ExperimentalCoroutinesApi
 class UsuarioRepositoryTest : StringSpec({
 
+    val mockAuthApi: LevelUpApi = mockk()
+    val mockSecureApi: LevelUpApi = mockk()
+    val mockTokenStore: TokenStore = mockk(relaxed = true)
+    lateinit var repository: UsuarioRepository
+
+    beforeTest {
+        coEvery { mockTokenStore.currentSession() } returns TokenSession()
+        repository = UsuarioRepository(mockAuthApi, mockSecureApi, mockTokenStore, Dispatchers.Unconfined)
+    }
+
     "al iniciar sesion con exito, debe llamar a la api y persistir la sesion" {
         runTest {
-            // 1. Preparación
-            val authApi: LevelUpApi = mockk()
-            val secureApi: LevelUpApi = mockk()
-            val tokenStore: TokenStore = mockk(relaxed = true)
-            coEvery { tokenStore.currentSession() } returns mockk(relaxed = true) // Evitar que el init falle
-            val repository = UsuarioRepository(authApi, secureApi, tokenStore, Dispatchers.Unconfined)
-
             val email = "test@test.com"
             val password = "password123"
             val mockUserDto = UsuarioRespuestaDto(id = 1, email = email, nombre = "Test", rol = "USER")
             val mockResponse = LoginResponse(accessToken = "fake-access-token", refreshToken = "fake-refresh-token", usuario = mockUserDto)
+            coEvery { mockAuthApi.login(any()) } returns mockResponse
 
-            coEvery { authApi.login(any()) } returns mockResponse
-
-            // 2. Acción
             repository.iniciarSesion(email, password)
 
-            // 3. Verificación
-            coVerify(exactly = 1) { authApi.login(any()) }
-            coVerify(exactly = 1) { tokenStore.persistSession(any()) }
+            coVerify(exactly = 1) { mockAuthApi.login(any()) }
+            coVerify(exactly = 1) { mockTokenStore.persistSession(any()) }
         }
     }
 
     "al cerrar sesion, debe limpiar el tokenStore" {
         runTest {
-            // 1. Preparación
-            val authApi: LevelUpApi = mockk()
-            val secureApi: LevelUpApi = mockk()
-            val tokenStore: TokenStore = mockk()
-            coEvery { tokenStore.clear() } just runs
-            coEvery { tokenStore.currentSession() } returns mockk(relaxed = true)
-            val repository = UsuarioRepository(authApi, secureApi, tokenStore, Dispatchers.Unconfined)
-
-            // 2. Acción
+            coEvery { mockTokenStore.clear() } just runs
             repository.cerrarSesion()
-
-            // 3. Verificación
-            coVerify(atLeast = 1) { tokenStore.clear() }
+            coVerify(exactly = 1) { mockTokenStore.clear() }
         }
     }
 
     "al registrar un usuario, debe llamar a la api" {
         runTest {
-            // 1. Preparación
-            val authApi: LevelUpApi = mockk()
-            val secureApi: LevelUpApi = mockk()
-            val tokenStore: TokenStore = mockk(relaxed = true)
-            coEvery { tokenStore.currentSession() } returns mockk(relaxed = true)
-            val repository = UsuarioRepository(authApi, secureApi, tokenStore, Dispatchers.Unconfined)
-
             val mockUserDto = UsuarioRespuestaDto(id = 1, email = "nuevo@test.com", nombre = "Nuevo", rol = "USER")
+            coEvery { mockAuthApi.register(any()) } returns mockUserDto
 
-            coEvery { authApi.register(any()) } returns mockUserDto
+            repository.registrar("Nuevo", null, null, "nuevo@test.com", "pass123", "01/01/1990", null, null, null, null)
 
-            // 2. Acción
-            repository.registrar(
-                nombre = "Nuevo",
-                run = null,
-                apellido = null,
-                email = "nuevo@test.com",
-                contrasena = "pass123",
-                fechaNacimiento = "01/01/1990",
-                telefono = null,
-                region = null,
-                comuna = null,
-                direccion = null
-            )
+            coVerify(exactly = 1) { mockAuthApi.register(any()) }
+        }
+    }
 
-            // 3. Verificación
-            coVerify(exactly = 1) { authApi.register(any()) }
+    "al actualizar el perfil, debe llamar a la secureApi y persistir la sesion" {
+        runTest {
+            // 1. Preparación
+            val originalEmail = "antiguo@test.com"
+            val originalUserDto = UsuarioRespuestaDto(id = 1, email = originalEmail, nombre = "Antiguo", rol = "USER")
+            val loginResponse = LoginResponse(accessToken = "fake-token", refreshToken = "fake-token", usuario = originalUserDto)
+            coEvery { mockAuthApi.login(any()) } returns loginResponse
+            repository.iniciarSesion(originalEmail, "password")
+
+            // 2. Preparación
+            val updatedUserDto = UsuarioRespuestaDto(id = 1, email = "nuevo@test.com", nombre = "Nuevo", rol = "USER")
+            coEvery { mockSecureApi.updateUser(any(), any()) } returns updatedUserDto
+
+            // 3. Acción
+            repository.actualizarPerfil("Nuevo", "nuevo@test.com")
+
+            // 4. Verificación
+            coVerify(exactly = 1) { mockSecureApi.updateUser(originalUserDto.id, any()) }
+            coVerify(atLeast = 1) { mockTokenStore.persistSession(any()) } // Se llama en login y en update
+        }
+    }
+
+    "al cambiar la contraseña, debe llamar a la secureApi" {
+        runTest {
+            // 1. Preparación
+            val email = "test@test.com"
+            val userDto = UsuarioRespuestaDto(id = 1, email = email, nombre = "Test", rol = "USER")
+            val loginResponse = LoginResponse(accessToken = "fake-token", refreshToken = "fake-token", usuario = userDto)
+            coEvery { mockAuthApi.login(any()) } returns loginResponse
+            repository.iniciarSesion(email, "password")
+
+            // 2. Preparación
+            coEvery { mockSecureApi.changePassword(any()) } returns Unit
+
+            // 3. Acción
+            repository.changePassword("pass-vieja", "pass-nueva")
+
+            // 4. Verificación
+            coVerify(exactly = 1) { mockSecureApi.changePassword(any()) }
         }
     }
 })

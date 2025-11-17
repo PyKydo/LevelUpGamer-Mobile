@@ -34,32 +34,26 @@ class LoginViewModelTest : StringSpec({
     }
 
     "iniciarSesion con credenciales correctas debe resultar en éxito" {
-        // Preparación
         coEvery { authRepository.iniciarSesion("david@test.com", "123456") } returns dummyUser
 
-        // Acción
         viewModel.onChangeEmail("david@test.com")
         viewModel.onChangeContrasena("123456")
         viewModel.iniciarSesion()
         testDispatcher.scheduler.advanceUntilIdle()
 
-        // Verificación
         val uiState = viewModel.form.value
         uiState.isSuccess shouldBe true
         uiState.error shouldBe null
     }
 
     "iniciarSesion con contraseña incorrecta debe resultar en error" {
-        // Preparación
         coEvery { authRepository.iniciarSesion("david@test.com", "contraseña-incorrecta") } throws IllegalArgumentException("Contraseña incorrecta")
 
-        // Acción
         viewModel.onChangeEmail("david@test.com")
         viewModel.onChangeContrasena("contraseña-incorrecta")
         viewModel.iniciarSesion()
         testDispatcher.scheduler.advanceUntilIdle()
 
-        // Verificación
         val uiState = viewModel.form.value
         uiState.isSuccess shouldBe false
         uiState.error shouldNotBe null

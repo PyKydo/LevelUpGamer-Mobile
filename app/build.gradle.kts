@@ -58,6 +58,9 @@ android {
         compose = true
         buildConfig = true
     }
+    packagingOptions {
+        resources.excludes.add("/META-INF/{AL2.0,LGPL2.1}")
+    }
 }
 
 dependencies {
@@ -88,19 +91,14 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
-    // Configuración de Pruebas Unitarias Limpia
-    testImplementation(libs.junit) // JUnit 4
-    testImplementation("io.mockk:mockk:1.13.10")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
-    testImplementation("androidx.arch.core:core-testing:2.2.0")
-
-    // Dependencias de Android Testing (UI)
-    // Unit test libraries
+    // Configuración de Pruebas Unitarias Unificada (Kotest + MockK + Truth)
     testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
+    testImplementation("com.google.truth:truth:1.1.3")
     testImplementation("io.mockk:mockk:1.13.10")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+
+    // Dependencias de Android Testing (UI)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -109,7 +107,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 }
 
-// Use JUnit Platform for Kotest (JUnit5) tests
 tasks.withType<Test> {
     useJUnitPlatform()
 }

@@ -47,8 +47,7 @@ class CarritoViewModelTest : StringSpec({
             coEvery { carritoRepository.observarCarrito(usuarioIdEjemplo) } returns flowOf(itemsDePrueba)
 
             viewModel = CarritoViewModel(carritoRepository, pedidoRepository, usuarioRepository, usuarioIdEjemplo)
-            
-            // Corregido: Se ignora el valor inicial (emptyList) y se toma la primera emisión real
+
             val itemsObservados = viewModel.items.drop(1).first()
             itemsObservados shouldBe itemsDePrueba
             coVerify { carritoRepository.observarCarrito(usuarioIdEjemplo) }

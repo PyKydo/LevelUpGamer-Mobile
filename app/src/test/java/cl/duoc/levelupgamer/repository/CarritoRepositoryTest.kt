@@ -18,7 +18,6 @@ class CarritoRepositoryTest : StringSpec({
 
     "al agregar un item, debe llamar a la api y al dao" {
         runTest {
-            // 1. Preparación
             val carritoDao: CarritoItemDao = mockk(relaxed = true)
             val api: LevelUpApi = mockk(relaxed = true)
             val repository = CarritoRepository(carritoDao, api, Dispatchers.Unconfined)
@@ -31,10 +30,8 @@ class CarritoRepositoryTest : StringSpec({
 
             coEvery { api.addToCart(usuarioId, productoId, cantidad) } returns mockCarritoDto
 
-            // 2. Acción
             repository.agregar(usuarioId, productoId, cantidad)
 
-            // 3. Verificación
             coVerify(exactly = 1) { api.addToCart(usuarioId, productoId, cantidad) }
             coVerify(exactly = 1) { carritoDao.reemplazarCarrito(usuarioId, any()) }
         }
@@ -42,19 +39,15 @@ class CarritoRepositoryTest : StringSpec({
 
     "al limpiar el carrito, debe llamar a la api y al dao" {
         runTest {
-            // 1. Preparación
             val carritoDao: CarritoItemDao = mockk(relaxed = true)
             val api: LevelUpApi = mockk(relaxed = true)
             val repository = CarritoRepository(carritoDao, api, Dispatchers.Unconfined)
             val usuarioId = 1L
 
-            // La función clearCart devuelve Unit, por lo que se mockea de esta forma.
             coEvery { api.clearCart(usuarioId) } returns Unit
 
-            // 2. Acción
             repository.limpiarCarrito(usuarioId)
 
-            // 3. Verificación
             coVerify(exactly = 1) { api.clearCart(usuarioId) }
             coVerify(exactly = 1) { carritoDao.eliminarPorUsuario(usuarioId) }
         }

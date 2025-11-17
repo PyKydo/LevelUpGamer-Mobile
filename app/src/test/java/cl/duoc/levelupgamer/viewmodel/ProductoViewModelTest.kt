@@ -32,7 +32,6 @@ class ProductoViewModelTest : StringSpec({
 
     "El ViewModel debe cargar la lista de productos al inicializarse" {
         runTest(testDispatcher) {
-            // 1. Preparación
             val productoDao: ProductoDao = mockk()
             val api: cl.duoc.levelupgamer.data.remote.api.LevelUpApi = mockk()
             val dummyProducts = listOf(
@@ -42,15 +41,12 @@ class ProductoViewModelTest : StringSpec({
             coEvery { productoDao.observarTodos() } returns flowOf(dummyProducts)
             val productoRepository = ProductoRepository(productoDao, api)
 
-            // 2. Acción
             val viewModel = ProductoViewModel(productoRepository)
 
-            // 3. Verificación
             val productosState = withTimeoutOrNull(2000) { // Timeout de 2 segundos
                 viewModel.productos.first { it.isNotEmpty() }
             }
 
-            // Se comprueba que el estado no sea nulo y contenga los datos esperados.
             productosState shouldContainExactly dummyProducts
         }
     }
