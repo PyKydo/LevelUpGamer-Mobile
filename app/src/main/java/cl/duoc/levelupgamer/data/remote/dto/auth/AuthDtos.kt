@@ -29,6 +29,6 @@ data class TokenRefreshResponse(
 )
 
 data class ChangePasswordRequest(
-    @SerializedName("contrasenaActual") val currentPassword: String,
-    @SerializedName("contrasenaNueva") val newPassword: String
+    val currentPassword: String,
+    val newPassword: String
 )

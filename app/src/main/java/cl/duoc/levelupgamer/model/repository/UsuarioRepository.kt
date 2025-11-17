@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import org.json.JSONException
+import org.json.JSONObject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
@@ -168,6 +170,12 @@ class UsuarioRepository(
             if (errBody?.contains("No static resource") == true || e.code() == 404) {
                 throw IllegalStateException("El servidor no soporta el endpoint de cambio de contraseña (api/auth/change-password).", e)
             }
+            if (e.code() == 400) {
+                val validationMessage = buildValidationMessage(errBody)
+                if (!validationMessage.isNullOrBlank()) {
+                    throw IllegalArgumentException(validationMessage, e)
+                }
+            }
             throw e
         }
     }
@@ -194,3 +202,22 @@ class UsuarioRepository(
 
 private fun TokenSession.hasValidTokens(): Boolean =
     !accessToken.isNullOrBlank() && !refreshToken.isNullOrBlank()
+
+private fun buildValidationMessage(rawBody: String?): String? {
+    if (rawBody.isNullOrBlank()) return null
+    return try {
+        val json = JSONObject(rawBody)
+        val messages = mutableListOf<String>()
+        val keys = json.keys()
+        while (keys.hasNext()) {
+            val key = keys.next()
+            val value = json.optString(key)
+            if (!value.isNullOrBlank()) {
+                messages += value
+            }
+        }
+        messages.takeIf { it.isNotEmpty() }?.joinToString(separator = "\n")
+    } catch (_: JSONException) {
+        null
+    }
+}
