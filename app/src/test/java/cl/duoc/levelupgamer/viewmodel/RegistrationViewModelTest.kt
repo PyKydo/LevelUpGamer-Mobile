@@ -34,15 +34,22 @@ class RegistrationViewModelTest : StringSpec({
             // 1. Preparación
             val usuarioRepository: UsuarioRepository = mockk()
             val dummyUser = Usuario(1, "Nuevo Usuario", "nuevo@test.com", "ValidPass123!", "01/01/2000")
-            coEvery { usuarioRepository.registrar(any(), any(), any(), any()) } returns dummyUser
+            // Se actualiza la firma para que coincida con los 10 parámetros
+            coEvery { usuarioRepository.registrar(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } returns dummyUser
             val viewModel = RegistrationViewModel(usuarioRepository)
 
             // 2. Acción
             viewModel.onChangeNombre("Nuevo Usuario")
+            viewModel.onChangeRun("11.111.111-1")
+            viewModel.onChangeApellido("Test")
             viewModel.onChangeEmail("nuevo@test.com")
             viewModel.onChangeContrasena("ValidPass123!")
-            viewModel.onChangeContrasenaConfirm("ValidPass123!") // Se añade la confirmación
+            viewModel.onChangeContrasenaConfirm("ValidPass123!")
             viewModel.onChangeFechaNacimiento("01/01/2000")
+            viewModel.onChangeRegion("Metropolitana")
+            viewModel.onChangeComuna("Santiago")
+            viewModel.onChangeDireccion("Av. Siempre Viva 123")
+            viewModel.onChangeAceptaTerminos(true)
             viewModel.registrar()
             advanceUntilIdle()
 
@@ -58,15 +65,22 @@ class RegistrationViewModelTest : StringSpec({
             // 1. Preparación
             val usuarioRepository: UsuarioRepository = mockk()
             val errorMessage = "El email ya está registrado"
-            coEvery { usuarioRepository.registrar(any(), any(), any(), any()) } throws IllegalArgumentException(errorMessage)
+            // Se actualiza la firma para que coincida con los 10 parámetros
+            coEvery { usuarioRepository.registrar(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) } throws IllegalArgumentException(errorMessage)
             val viewModel = RegistrationViewModel(usuarioRepository)
 
             // 2. Acción
             viewModel.onChangeNombre("Otro Usuario")
+            viewModel.onChangeRun("22.222.222-2")
+            viewModel.onChangeApellido("Prueba")
             viewModel.onChangeEmail("existente@test.com")
             viewModel.onChangeContrasena("ValidPass123!")
-            viewModel.onChangeContrasenaConfirm("ValidPass123!") // Se añade la confirmación
+            viewModel.onChangeContrasenaConfirm("ValidPass123!")
             viewModel.onChangeFechaNacimiento("01/01/2000")
+            viewModel.onChangeRegion("Metropolitana")
+            viewModel.onChangeComuna("Santiago")
+            viewModel.onChangeDireccion("Av. Siempre Viva 123")
+            viewModel.onChangeAceptaTerminos(true)
             viewModel.registrar()
             advanceUntilIdle()
 
@@ -85,10 +99,16 @@ class RegistrationViewModelTest : StringSpec({
 
             // 2. Acción
             viewModel.onChangeNombre("Test")
+            viewModel.onChangeRun("11.111.111-1")
+            viewModel.onChangeApellido("Apellido")
             viewModel.onChangeEmail("test@test.com")
             viewModel.onChangeContrasena("corta") // Contraseña inválida
-            viewModel.onChangeContrasenaConfirm("corta") // Se añade la confirmación para aislar el error
+            viewModel.onChangeContrasenaConfirm("corta")
             viewModel.onChangeFechaNacimiento("01/01/2000")
+            viewModel.onChangeRegion("Metropolitana")
+            viewModel.onChangeComuna("Santiago")
+            viewModel.onChangeDireccion("Av. Siempre Viva 123")
+            viewModel.onChangeAceptaTerminos(true)
             viewModel.registrar()
             advanceUntilIdle()
 
@@ -96,7 +116,8 @@ class RegistrationViewModelTest : StringSpec({
             val uiState = viewModel.form.value
             uiState.isSuccess shouldBe false
             uiState.contrasenaError shouldNotBe null
-            coVerify(exactly = 0) { usuarioRepository.registrar(any(), any(), any(), any()) }
+            // Se actualiza la firma para que coincida con los 10 parámetros
+            coVerify(exactly = 0) { usuarioRepository.registrar(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
         }
     }
 
@@ -109,10 +130,16 @@ class RegistrationViewModelTest : StringSpec({
 
             // 2. Acción
             viewModel.onChangeNombre("Joven Usuario")
+            viewModel.onChangeRun("33.333.333-3")
+            viewModel.onChangeApellido("Menor")
             viewModel.onChangeEmail("joven@test.com")
             viewModel.onChangeContrasena("ValidPass123!")
-            viewModel.onChangeContrasenaConfirm("ValidPass123!") // Se añade la confirmación
+            viewModel.onChangeContrasenaConfirm("ValidPass123!")
             viewModel.onChangeFechaNacimiento(fechaMenorDeEdad)
+            viewModel.onChangeRegion("Metropolitana")
+            viewModel.onChangeComuna("Santiago")
+            viewModel.onChangeDireccion("Av. Siempre Viva 123")
+            viewModel.onChangeAceptaTerminos(true)
             viewModel.registrar()
             advanceUntilIdle()
 
@@ -120,7 +147,8 @@ class RegistrationViewModelTest : StringSpec({
             val uiState = viewModel.form.value
             uiState.isSuccess shouldBe false
             uiState.fechaNacimientoError shouldBe "Debes tener al menos 18 años."
-            coVerify(exactly = 0) { usuarioRepository.registrar(any(), any(), any(), any()) }
+            // Se actualiza la firma para que coincida con los 10 parámetros
+            coVerify(exactly = 0) { usuarioRepository.registrar(any(), any(), any(), any(), any(), any(), any(), any(), any(), any()) }
         }
     }
 })

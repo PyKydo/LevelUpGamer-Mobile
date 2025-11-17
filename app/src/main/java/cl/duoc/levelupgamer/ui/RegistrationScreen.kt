@@ -57,13 +57,85 @@ fun RegistrationScreen(
 ) {
     val form by vm.form.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    var acceptedTerms by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTermsDialog by remember { mutableStateOf(false) }
+    var showAddressDialog by remember { mutableStateOf(false) } // Estado para el diálogo de dirección
 
     val datePickerState = rememberDatePickerState(
         initialDisplayMode = DisplayMode.Input
     )
+
+    // Lógica para el diálogo de Términos y Condiciones
+    if (showTermsDialog) {
+        AlertDialog(
+            onDismissRequest = { showTermsDialog = false },
+            title = { Text("Términos y Condiciones") },
+            text = { Text("Al aceptar confirmas que eres mayor de edad y aceptas el uso de tus datos para brindar el servicio.") },
+            confirmButton = { TextButton(onClick = { showTermsDialog = false }) { Text("Cerrar") } }
+        )
+    }
+
+    // Lógica para el DatePickerDialog
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let {
+                            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.forLanguageTag("es-CL"))
+                            sdf.timeZone = TimeZone.getTimeZone("UTC")
+                            vm.onChangeFechaNacimiento(sdf.format(Date(it)))
+                        }
+                        showDatePicker = false
+                    }
+                ) { Text("Aceptar") }
+            },
+            dismissButton = { TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") } }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    // Lógica para el diálogo de Dirección
+    if (showAddressDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddressDialog = false },
+            title = { Text("Dirección de Envío") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = form.region,
+                        onValueChange = vm::onChangeRegion,
+                        label = { Text("Región") },
+                        isError = form.regionError != null,
+                        supportingText = { form.regionError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = form.comuna,
+                        onValueChange = vm::onChangeComuna,
+                        label = { Text("Comuna") },
+                        isError = form.comunaError != null,
+                        supportingText = { form.comunaError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = form.direccion,
+                        onValueChange = vm::onChangeDireccion,
+                        label = { Text("Dirección (calle y número)") },
+                        isError = form.direccionError != null,
+                        supportingText = { form.direccionError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showAddressDialog = false }) {
+                    Text("Aceptar")
+                }
+            }
+        )
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -77,125 +149,66 @@ fun RegistrationScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            if (showTermsDialog) {
-                AlertDialog(
-                    onDismissRequest = { showTermsDialog = false },
-                    title = { Text("Términos y Condiciones") },
-                    text = {
-                        Text(
-                            text = "Al aceptar confirmas que eres mayor de edad y aceptas el uso de tus datos para brindar el servicio."
-                        )
-                    },
-                    confirmButton = {
-                        TextButton(onClick = { showTermsDialog = false }) {
-                            Text("Cerrar")
-                        }
-                    }
-                )
-            }
-
-            if (showDatePicker) {
-                DatePickerDialog(
-                    onDismissRequest = { showDatePicker = false },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                val selectedMillis = datePickerState.selectedDateMillis
-                                if (selectedMillis != null) {
-                                    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.forLanguageTag("es-CL"))
-                                    sdf.timeZone = TimeZone.getTimeZone("UTC")
-                                    vm.onChangeFechaNacimiento(sdf.format(Date(selectedMillis)))
-                                }
-                                showDatePicker = false
-                            }
-                        ) { Text("Aceptar") }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
-                    }
-                ) {
-                    DatePicker(state = datePickerState)
-                }
-            }
-
             Text(text = "Registro", style = MaterialTheme.typography.headlineLarge)
-
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Campos de texto...
+            OutlinedTextField(value = form.nombre, onValueChange = vm::onChangeNombre, label = { Text("Nombre") }, isError = form.nombreError != null, supportingText = { form.nombreError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(value = form.apellido, onValueChange = vm::onChangeApellido, label = { Text("Apellido") }, isError = form.apellidoError != null, supportingText = { form.apellidoError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
-                value = form.nombre,
-                onValueChange = vm::onChangeNombre,
-                label = { Text("Nombre") },
+                value = form.run,
+                onValueChange = vm::onChangeRun,
+                label = { Text("RUN") },
+                placeholder = { Text("Ej: 12.345.678-9") },
                 singleLine = true,
-                isError = form.nombreError != null,
-                supportingText = { form.nombreError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
+                isError = form.runError != null,
+                supportingText = { form.runError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
                 modifier = Modifier.fillMaxWidth()
             )
-
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(value = form.email, onValueChange = vm::onChangeEmail, label = { Text("Email") }, isError = form.emailError != null, supportingText = { form.emailError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(value = form.contrasena, onValueChange = vm::onChangeContrasena, label = { Text("Contraseña") }, visualTransformation = PasswordVisualTransformation(), isError = form.contrasenaError != null, supportingText = { form.contrasenaError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(value = form.contrasenaConfirm, onValueChange = vm::onChangeContrasenaConfirm, label = { Text("Confirmar contraseña") }, visualTransformation = PasswordVisualTransformation(), isError = form.contrasenaConfirmError != null, supportingText = { form.contrasenaConfirmError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = form.email,
-                onValueChange = vm::onChangeEmail,
-                label = { Text("Email") },
-                singleLine = true,
-                isError = form.emailError != null,
-                supportingText = { form.emailError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = form.contrasena,
-                onValueChange = vm::onChangeContrasena,
-                label = { Text("Contraseña") },
-                visualTransformation = PasswordVisualTransformation(),
-                isError = form.contrasenaError != null,
-                supportingText = { form.contrasenaError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = form.contrasenaConfirm,
-                onValueChange = vm::onChangeContrasenaConfirm,
-                label = { Text("Confirmar contraseña") },
-                visualTransformation = PasswordVisualTransformation(),
-                isError = form.contrasenaConfirmError != null,
-                supportingText = { form.contrasenaConfirmError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Envolvemos el campo en un Box para que toda el área sea clicable
+            // Campo de Fecha de Nacimiento
             Box(modifier = Modifier.clickable { showDatePicker = true }) {
                 OutlinedTextField(
                     value = form.fechaNacimiento,
-                    onValueChange = { },
+                    onValueChange = {},
                     label = { Text("Fecha de Nacimiento") },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = false, // Desactivamos el campo para que el Box reciba el clic
-                    colors = OutlinedTextFieldDefaults.colors( // Le damos colores para que no parezca deshabilitado
-                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                        disabledBorderColor = MaterialTheme.colorScheme.outline,
-                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    ),
-                    supportingText = {
-                        form.fechaNacimientoError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-                    }
+                    enabled = false,
+                    colors = OutlinedTextFieldDefaults.colors(disabledTextColor = MaterialTheme.colorScheme.onSurface, disabledBorderColor = MaterialTheme.colorScheme.outline, disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant),
+                    supportingText = { form.fechaNacimientoError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Nuevo campo para abrir el diálogo de dirección
+            val direccionMostrada = listOf(form.direccion, form.comuna, form.region).filter { it.isNotBlank() }.joinToString(", ")
+            Box(modifier = Modifier.clickable { showAddressDialog = true }) {
+                OutlinedTextField(
+                    value = direccionMostrada,
+                    onValueChange = {},
+                    label = { Text("Dirección de Envío") },
+                    placeholder = { Text("Presiona para ingresar tu dirección") },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = false,
+                    colors = OutlinedTextFieldDefaults.colors(disabledTextColor = MaterialTheme.colorScheme.onSurface, disabledBorderColor = MaterialTheme.colorScheme.outline, disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant),
+                    supportingText = { form.direccionError?.let { Text(it, color = MaterialTheme.colorScheme.error) } ?: form.comunaError?.let { Text(it, color = MaterialTheme.colorScheme.error) } ?: form.regionError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Checkbox(checked = acceptedTerms, onCheckedChange = { acceptedTerms = it })
+            // Checkbox de Términos y Condiciones
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Checkbox(checked = form.aceptaTerminos, onCheckedChange = vm::onChangeAceptaTerminos)
                 Text(text = "Acepto los ")
                 Text(
                     text = "Términos y Condiciones",
@@ -205,22 +218,18 @@ fun RegistrationScreen(
                     fontWeight = FontWeight.Bold
                 )
             }
+            form.aceptaTerminosError?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = vm::registrar,
-                enabled = !form.isLoading && acceptedTerms,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            // Botón de Registrarse
+            Button(onClick = vm::registrar, enabled = !form.isLoading, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary), modifier = Modifier.fillMaxWidth()) {
                 Text("Registrarse", color = MaterialTheme.colorScheme.onSecondary)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Enlace para ir a Iniciar Sesión
             Row {
                 Text("¿Ya tienes una cuenta? ")
                 Text(
@@ -232,17 +241,15 @@ fun RegistrationScreen(
                 )
             }
 
+            // Efectos para mostrar Snackbar y navegar
             LaunchedEffect(form.isSuccess) {
                 if (form.isSuccess) {
                     onRegistered()
                     vm.limpiarFormulario()
                 }
             }
-
             LaunchedEffect(form.error) {
-                form.error?.let { msg ->
-                    snackbarHostState.showSnackbar(message = msg)
-                }
+                form.error?.let { snackbarHostState.showSnackbar(message = it) }
             }
         }
     }

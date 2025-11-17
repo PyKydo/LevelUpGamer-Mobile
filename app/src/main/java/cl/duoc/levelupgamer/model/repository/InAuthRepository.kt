@@ -6,7 +6,19 @@ import kotlinx.coroutines.flow.StateFlow
 interface InAuthRepository {
     val usuarioActual: StateFlow<Usuario?>
 
-    suspend fun registrar(nombre: String, email: String, contrasena: String, fechaNacimiento: String): Usuario
+    suspend fun registrar(
+        nombre: String,
+        run: String?,
+        apellido: String?,
+        email: String,
+        contrasena: String,
+        fechaNacimiento: String,
+        telefono: String?,
+        region: String?,
+        comuna: String?,
+        direccion: String?
+    ): Usuario
+
     suspend fun iniciarSesion(email: String, contrasena: String): Usuario
     suspend fun cerrarSesion()
     suspend fun actualizarPerfil(nombre: String, email: String)

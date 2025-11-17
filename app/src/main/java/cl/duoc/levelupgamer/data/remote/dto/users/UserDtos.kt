@@ -2,11 +2,14 @@ package cl.duoc.levelupgamer.data.remote.dto.users
 
 data class UsuarioRegistroDto(
     val nombre: String,
+    val run: String? = null,
     val apellido: String? = null,
     val email: String,
     val password: String,
     val fechaNacimiento: String,
     val telefono: String? = null,
+    val region: String? = null,
+    val comuna: String? = null,
     val direccion: String? = null
 )
 

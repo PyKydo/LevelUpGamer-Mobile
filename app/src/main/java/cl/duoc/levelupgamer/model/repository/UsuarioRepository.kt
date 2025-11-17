@@ -35,18 +35,34 @@ class UsuarioRepository(
         scope.launch { restoreSessionIfPossible() }
     }
 
-    override suspend fun registrar(nombre: String, email: String, contrasena: String, fechaNacimiento: String): Usuario =
-        withContext(ioDispatcher) {
-            val dto = authApi.register(
-                UsuarioRegistroDto(
-                    nombre = nombre,
-                    email = email,
-                    password = contrasena,
-                    fechaNacimiento = fechaNacimiento
-                )
+    override suspend fun registrar(
+        nombre: String,
+        run: String?,
+        apellido: String?,
+        email: String,
+        contrasena: String,
+        fechaNacimiento: String,
+        telefono: String?,
+        region: String?,
+        comuna: String?,
+        direccion: String?
+    ): Usuario = withContext(ioDispatcher) {
+        val dto = authApi.register(
+            UsuarioRegistroDto(
+                nombre = nombre,
+                run = run,
+                apellido = apellido,
+                email = email,
+                password = contrasena,
+                fechaNacimiento = fechaNacimiento,
+                telefono = telefono,
+                region = region,
+                comuna = comuna,
+                direccion = direccion
             )
-            dto.toDomain()
-        }
+        )
+        dto.toDomain()
+    }
 
     override suspend fun iniciarSesion(email: String, contrasena: String): Usuario = withContext(ioDispatcher) {
         val response = authApi.login(LoginRequest(username = email, password = contrasena))
