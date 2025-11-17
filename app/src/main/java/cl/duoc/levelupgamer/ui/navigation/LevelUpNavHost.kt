@@ -37,6 +37,9 @@ import cl.duoc.levelupgamer.viewmodel.ProductoViewModel
 import cl.duoc.levelupgamer.viewmodel.RegistrationViewModel
 import cl.duoc.levelupgamer.viewmodel.RegistrationViewModelFactory
 import kotlinx.coroutines.launch
+import androidx.activity.compose.BackHandler
+import androidx.compose.ui.platform.LocalContext
+import android.app.Activity
 
 @Composable
 fun LevelUpNavHost(
@@ -48,6 +51,7 @@ fun LevelUpNavHost(
 ) {
     val navController = rememberNavController()
     val usuarioActual by usuarioRepository.usuarioActual.collectAsState(initial = null)
+    val isSessionActive by usuarioRepository.sesionActiva.collectAsState()
     val carritoVm: CarritoViewModel? = usuarioActual?.let { usuario ->
         viewModel(
             key = "carrito_vm_${usuario.id}",
@@ -71,7 +75,7 @@ fun LevelUpNavHost(
         modifier = modifier
     ) {
         composable(AppScreen.Splash.route) {
-            val isLoggedIn = usuarioActual != null
+            val isLoggedIn = isSessionActive
             SplashScreen(
                 onTimeout = {
                     val destination = if (isLoggedIn) AppScreen.Catalog.route else AppScreen.Login.route
@@ -103,6 +107,12 @@ fun LevelUpNavHost(
         }
         composable(AppScreen.Catalog.route) {
             val productos by productosVm.productos.collectAsState()
+            val context = LocalContext.current
+            // When user is logged in and on the catalog (main) screen,
+            // pressing device Back should exit the app instead of returning to Login.
+            BackHandler(enabled = isSessionActive) {
+                (context as? Activity)?.finish()
+            }
             CatalogScreen(
                 products = productos,
                 onProductClick = { producto -> navController.navigate(AppScreen.ProductDetail.createRoute(producto.id)) },

@@ -14,10 +14,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 
 class UsuarioRepository(
     private val authApi: LevelUpApi,
@@ -30,6 +34,13 @@ class UsuarioRepository(
 
     private val _usuarioActual = MutableStateFlow<Usuario?>(null)
     override val usuarioActual: StateFlow<Usuario?> = _usuarioActual.asStateFlow()
+    val sesionActiva: StateFlow<Boolean> = tokenStore.sessionFlow
+        .map { it.hasValidTokens() }
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = tokenStore.currentSession().hasValidTokens()
+        )
 
     init {
         scope.launch { restoreSessionIfPossible() }
@@ -145,12 +156,20 @@ class UsuarioRepository(
     }
 
     override suspend fun changePassword(currentPassword: String, newPassword: String) = withContext(ioDispatcher) {
-        secureApi.changePassword(
-            ChangePasswordRequest(
-                currentPassword = currentPassword,
-                newPassword = newPassword
+        try {
+            secureApi.changePassword(
+                ChangePasswordRequest(
+                    currentPassword = currentPassword,
+                    newPassword = newPassword
+                )
             )
-        )
+        } catch (e: HttpException) {
+            val errBody = try { e.response()?.errorBody()?.string() } catch (_: Throwable) { null }
+            if (errBody?.contains("No static resource") == true || e.code() == 404) {
+                throw IllegalStateException("El servidor no soporta el endpoint de cambio de contraseña (api/auth/change-password).", e)
+            }
+            throw e
+        }
     }
 
     suspend fun refreshPerfil() {
@@ -164,8 +183,14 @@ class UsuarioRepository(
             val user = withContext(ioDispatcher) { secureApi.getUser(userId).toDomain() }
             _usuarioActual.value = user
         } catch (_: Exception) {
-            tokenStore.clear()
+            // If we fail to fetch the user (network/server down, etc.) do NOT clear
+            // the persisted session here — keep tokens so the user stays logged in
+            // locally until they explicitly log out or the authenticator decides
+            // the tokens are invalid (then it will clear them).
             _usuarioActual.value = null
         }
     }
 }
+
+private fun TokenSession.hasValidTokens(): Boolean =
+    !accessToken.isNullOrBlank() && !refreshToken.isNullOrBlank()
