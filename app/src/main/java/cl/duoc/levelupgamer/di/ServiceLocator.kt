@@ -18,7 +18,9 @@ class ServiceLocator private constructor(context: Context) {
     private val databaseInternal: AppDatabase by lazy { AppDatabase.get(appContext) }
     private val tokenStoreInternal: TokenStore by lazy { SecureTokenStore(appContext) }
 
-    private val apiBaseUrl: String by lazy { readBuildConfigString(appContext, "API_BASE_URL", "http://10.0.2.2:8080/") }
+    // Default to the emulator host mapping so the app can reach a backend running on the development machine.
+    // Override this by defining `API_BASE_URL` in BuildConfig or by setting `LEVELUP_API_URL` in `local.properties`.
+    private val apiBaseUrl: String by lazy { readBuildConfigString(appContext, "API_BASE_URL", "http://10.0.2.2:8081/") }
     private val isDebug: Boolean by lazy { readBuildConfigBoolean(appContext, "DEBUG", false) }
 
     private val networkModule: NetworkModule by lazy { NetworkModule(tokenStoreInternal, apiBaseUrl, isDebug) }
