@@ -33,7 +33,7 @@ android {
                 val scheme = if (hasScheme) "" else "https://"
                 "$scheme$h$p/"
             }
-            ?: "http://10.0.2.2:8080/"
+            ?: "http://98.89.104.110:8081/"
 
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }

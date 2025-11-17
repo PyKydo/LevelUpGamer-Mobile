@@ -29,7 +29,7 @@ LEVELUP_API_URL=https://mi-backend.example.com/
    ```
 
 2. **Abrir en Android Studio** (Hedgehog o superior) y sincronizar Gradle.
-3. **Configurar la URL** si no usarás `10.0.2.2`.
+3. **Configurar la URL** si no usarás `98.89.104.110`.
 4. **Ejecutar la app** en un emulador/dispositivo (Android 8.0+). El primer arranque descargará dependencias desde Maven Central.
 
 ## Testing
