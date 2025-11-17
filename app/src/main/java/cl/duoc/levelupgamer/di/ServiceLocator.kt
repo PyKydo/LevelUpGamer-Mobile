@@ -11,6 +11,7 @@ import cl.duoc.levelupgamer.model.repository.PedidoRepository
 import cl.duoc.levelupgamer.model.repository.ProductoRepository
 import cl.duoc.levelupgamer.model.repository.UsuarioRepository
 
+@Suppress("unused", "UNUSED_PARAMETER", "MemberVisibilityCanBePrivate")
 class ServiceLocator private constructor(context: Context) {
 
     private val appContext = context.applicationContext
@@ -18,9 +19,7 @@ class ServiceLocator private constructor(context: Context) {
     private val databaseInternal: AppDatabase by lazy { AppDatabase.get(appContext) }
     private val tokenStoreInternal: TokenStore by lazy { SecureTokenStore(appContext) }
 
-    // Default to the emulator host mapping so the app can reach a backend running on the development machine.
-    // Override this by defining `API_BASE_URL` in BuildConfig or by setting `LEVELUP_API_URL` in `local.properties`.
-    private val apiBaseUrl: String by lazy { readBuildConfigString(appContext, "API_BASE_URL", "http://10.0.2.2:8081/") }
+    private val apiBaseUrl: String by lazy { readBuildConfigString(appContext, "API_BASE_URL", "http://98.89.104.110:8081/") }
     private val isDebug: Boolean by lazy { readBuildConfigBoolean(appContext, "DEBUG", false) }
 
     private val networkModule: NetworkModule by lazy { NetworkModule(tokenStoreInternal, apiBaseUrl, isDebug) }
@@ -74,9 +73,9 @@ class ServiceLocator private constructor(context: Context) {
                 val clazz = Class.forName("${context.packageName}.BuildConfig")
                 val field = clazz.getDeclaredField(fieldName)
                 field.get(null) as? String ?: default
-            } catch (t: Throwable) {
-                default
-            }
+            } catch (_: Throwable) {
+                    default
+                }
         }
 
         private fun readBuildConfigBoolean(context: Context, fieldName: String, default: Boolean): Boolean {
@@ -84,8 +83,8 @@ class ServiceLocator private constructor(context: Context) {
                 val clazz = Class.forName("${context.packageName}.BuildConfig")
                 val field = clazz.getDeclaredField(fieldName)
                 field.getBoolean(null)
-            } catch (t: Throwable) {
-                default
+                } catch (_: Throwable) {
+                    default
             }
         }
     }

@@ -4,8 +4,8 @@ import cl.duoc.levelupgamer.data.remote.dto.users.UsuarioRespuestaDto
 import com.google.gson.annotations.SerializedName
 
 data class LoginRequest(
-    val username: String,
-    val password: String
+    @SerializedName("correo") val correo: String,
+    @SerializedName("contrasena") val contrasena: String
 )
 
 data class LoginResponse(
@@ -13,6 +13,7 @@ data class LoginResponse(
     @SerializedName("accessToken") val accessToken: String? = null,
     val refreshToken: String? = null,
     val rol: String? = null,
+    @SerializedName("usuarioId") val usuarioId: Long? = null,
     val usuario: UsuarioRespuestaDto? = null
 )
 

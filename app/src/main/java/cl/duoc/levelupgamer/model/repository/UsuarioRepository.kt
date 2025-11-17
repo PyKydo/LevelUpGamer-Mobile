@@ -36,53 +36,84 @@ class UsuarioRepository(
     }
 
     override suspend fun registrar(
+        run: String,
         nombre: String,
-        run: String?,
-        apellido: String?,
-        email: String,
+        apellidos: String,
+        correo: String,
         contrasena: String,
         fechaNacimiento: String,
-        telefono: String?,
-        region: String?,
-        comuna: String?,
-        direccion: String?
+        region: String,
+        comuna: String,
+        direccion: String,
+        codigoReferido: String?
     ): Usuario = withContext(ioDispatcher) {
         val dto = authApi.register(
             UsuarioRegistroDto(
-                nombre = nombre,
                 run = run,
-                apellido = apellido,
-                email = email,
-                password = contrasena,
+                nombre = nombre,
+                apellidos = apellidos,
+                correo = correo,
+                contrasena = contrasena,
                 fechaNacimiento = fechaNacimiento,
-                telefono = telefono,
                 region = region,
                 comuna = comuna,
-                direccion = direccion
+                direccion = direccion,
+                codigoReferido = codigoReferido
             )
         )
         dto.toDomain()
     }
 
     override suspend fun iniciarSesion(email: String, contrasena: String): Usuario = withContext(ioDispatcher) {
-        val response = authApi.login(LoginRequest(username = email, password = contrasena))
-        val userDto = response.usuario ?: throw IllegalStateException("El backend no envió información del usuario.")
+        val response = authApi.login(LoginRequest(correo = email, contrasena = contrasena))
         val accessToken = response.accessToken ?: response.legacyToken
             ?: throw IllegalStateException("El backend no entregó token de acceso.")
         val refreshToken = response.refreshToken ?: throw IllegalStateException("El backend no entregó refresh token.")
-        val user = userDto.toDomain()
+        val userDto = response.usuario
+        val resolvedRole = response.rol ?: userDto?.rol
+
+        if (userDto != null) {
+            val user = userDto.toDomain()
+            tokenStore.persistSession(
+                TokenSession(
+                    accessToken = accessToken,
+                    refreshToken = refreshToken,
+                    userId = user.id,
+                    email = user.email,
+                    role = resolvedRole ?: user.rol
+                )
+            )
+            _usuarioActual.value = user
+            return@withContext user
+        }
+
+        val userId = response.usuarioId
+            ?: throw IllegalStateException("El backend no envió información del usuario.")
+
+        // Persist the tokens before hitting secured endpoints so the interceptor can attach them.
+        val provisionalSession = TokenSession(
+            accessToken = accessToken,
+            refreshToken = refreshToken,
+            userId = userId,
+            role = resolvedRole
+        )
+        tokenStore.persistSession(provisionalSession)
+
+        val fetchedUser = try {
+            secureApi.getUser(userId).toDomain()
+        } catch (t: Throwable) {
+            tokenStore.clear()
+            throw IllegalStateException("No se pudo obtener la información del usuario.", t)
+        }
 
         tokenStore.persistSession(
-            TokenSession(
-                accessToken = accessToken,
-                refreshToken = refreshToken,
-                userId = user.id,
-                email = user.email,
-                role = response.rol ?: user.rol
+            provisionalSession.copy(
+                email = fetchedUser.email,
+                role = resolvedRole ?: fetchedUser.rol
             )
         )
-        _usuarioActual.value = user
-        user
+        _usuarioActual.value = fetchedUser
+        fetchedUser
     }
 
     override suspend fun cerrarSesion() {
@@ -96,11 +127,13 @@ class UsuarioRepository(
             id = actual.id,
             body = UsuarioUpdateDto(
                 nombre = nombre,
-                apellido = actual.apellido,
-                email = email,
+                apellidos = actual.apellido.orEmpty(),
+                correo = email,
+                region = actual.region,
+                comuna = actual.comuna,
+                direccion = actual.direccion,
                 fechaNacimiento = actual.fechaNacimiento.ifBlank { null },
                 telefono = actual.telefono,
-                direccion = actual.direccion,
                 fotoPerfilUrl = actual.fotoPerfilUrl
             )
         ).toDomain()

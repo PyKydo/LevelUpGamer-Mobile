@@ -12,7 +12,7 @@ Aplicación Android (Jetpack Compose + MVVM) para la tienda LevelUpGamer. El cli
 
 ## Configuración del Backend
 
-La app lee la URL base desde `BuildConfig.API_BASE_URL`. Por defecto apunta a `http://10.0.2.2:8080/` (localhost expuesto al emulador). Puedes sobrescribirla añadiendo a `local.properties` o ejecutando Gradle con la propiedad `LEVELUP_API_URL`:
+La app lee la URL base desde `BuildConfig.API_BASE_URL`. Por defecto apunta a `http://98.89.104.110:8081/` (localhost expuesto al emulador). Puedes sobrescribirla añadiendo a `local.properties` o ejecutando Gradle con la propiedad `LEVELUP_API_URL`:
 
 ```properties
 LEVELUP_API_URL=https://mi-backend.example.com/

@@ -17,6 +17,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 
 @ExperimentalCoroutinesApi
+@Suppress("unused")
 class UsuarioRepositoryTest : StringSpec({
 
     val mockAuthApi: LevelUpApi = mockk()
@@ -33,7 +34,14 @@ class UsuarioRepositoryTest : StringSpec({
         runTest {
             val email = "test@test.com"
             val password = "password123"
-            val mockUserDto = UsuarioRespuestaDto(id = 1, email = email, nombre = "Test", rol = "USER")
+            val mockUserDto = UsuarioRespuestaDto(
+                id = 1,
+                run = "11.111.111-1",
+                nombre = "Test",
+                apellidos = "User",
+                correo = email,
+                rol = "USER"
+            )
             val mockResponse = LoginResponse(accessToken = "fake-access-token", refreshToken = "fake-refresh-token", usuario = mockUserDto)
             coEvery { mockAuthApi.login(any()) } returns mockResponse
 
@@ -54,10 +62,28 @@ class UsuarioRepositoryTest : StringSpec({
 
     "al registrar un usuario, debe llamar a la api" {
         runTest {
-            val mockUserDto = UsuarioRespuestaDto(id = 1, email = "nuevo@test.com", nombre = "Nuevo", rol = "USER")
+            val mockUserDto = UsuarioRespuestaDto(
+                id = 1,
+                run = "11.111.111-1",
+                nombre = "Nuevo",
+                apellidos = "Usuario",
+                correo = "nuevo@test.com",
+                rol = "USER"
+            )
             coEvery { mockAuthApi.register(any()) } returns mockUserDto
 
-            repository.registrar("Nuevo", null, null, "nuevo@test.com", "pass123", "01/01/1990", null, null, null, null)
+            repository.registrar(
+                run = "11.111.111-1",
+                nombre = "Nuevo",
+                apellidos = "Usuario",
+                correo = "nuevo@test.com",
+                contrasena = "pass123",
+                fechaNacimiento = "2000-01-01",
+                region = "RM",
+                comuna = "Santiago",
+                direccion = "Av. Siempre Viva 123",
+                codigoReferido = null
+            )
 
             coVerify(exactly = 1) { mockAuthApi.register(any()) }
         }
@@ -67,13 +93,27 @@ class UsuarioRepositoryTest : StringSpec({
         runTest {
             // 1. Preparación
             val originalEmail = "antiguo@test.com"
-            val originalUserDto = UsuarioRespuestaDto(id = 1, email = originalEmail, nombre = "Antiguo", rol = "USER")
+            val originalUserDto = UsuarioRespuestaDto(
+                id = 1,
+                run = "11.111.111-1",
+                nombre = "Antiguo",
+                apellidos = "Usuario",
+                correo = originalEmail,
+                rol = "USER"
+            )
             val loginResponse = LoginResponse(accessToken = "fake-token", refreshToken = "fake-token", usuario = originalUserDto)
             coEvery { mockAuthApi.login(any()) } returns loginResponse
             repository.iniciarSesion(originalEmail, "password")
 
             // 2. Preparación
-            val updatedUserDto = UsuarioRespuestaDto(id = 1, email = "nuevo@test.com", nombre = "Nuevo", rol = "USER")
+            val updatedUserDto = UsuarioRespuestaDto(
+                id = 1,
+                run = "11.111.111-1",
+                nombre = "Nuevo",
+                apellidos = "Usuario",
+                correo = "nuevo@test.com",
+                rol = "USER"
+            )
             coEvery { mockSecureApi.updateUser(any(), any()) } returns updatedUserDto
 
             // 3. Acción
@@ -89,7 +129,14 @@ class UsuarioRepositoryTest : StringSpec({
         runTest {
             // 1. Preparación
             val email = "test@test.com"
-            val userDto = UsuarioRespuestaDto(id = 1, email = email, nombre = "Test", rol = "USER")
+            val userDto = UsuarioRespuestaDto(
+                id = 1,
+                run = "11.111.111-1",
+                nombre = "Test",
+                apellidos = "User",
+                correo = email,
+                rol = "USER"
+            )
             val loginResponse = LoginResponse(accessToken = "fake-token", refreshToken = "fake-token", usuario = userDto)
             coEvery { mockAuthApi.login(any()) } returns loginResponse
             repository.iniciarSesion(email, "password")

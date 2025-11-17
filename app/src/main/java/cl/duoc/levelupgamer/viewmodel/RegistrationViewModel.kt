@@ -16,8 +16,8 @@ import java.util.regex.Pattern
 
 data class RegistrationFormState(
     val nombre: String = "",
+    val apellidos: String = "",
     val run: String = "",
-    val apellido: String = "",
     val email: String = "",
     val contrasena: String = "",
     val contrasenaConfirm: String = "",
@@ -25,11 +25,12 @@ data class RegistrationFormState(
     val region: String = "",
     val comuna: String = "",
     val direccion: String = "",
-    val aceptaTerminos: Boolean = false, // Nuevo campo
+    val codigoReferido: String = "",
+    val aceptaTerminos: Boolean = false,
 
     val nombreError: String? = null,
+    val apellidosError: String? = null,
     val runError: String? = null,
-    val apellidoError: String? = null,
     val emailError: String? = null,
     val contrasenaError: String? = null,
     val contrasenaConfirmError: String? = null,
@@ -37,7 +38,7 @@ data class RegistrationFormState(
     val regionError: String? = null,
     val comunaError: String? = null,
     val direccionError: String? = null,
-    val aceptaTerminosError: String? = null, // Nuevo campo de error
+    val aceptaTerminosError: String? = null,
 
     val error: String? = null,
     val isLoading: Boolean = false,
@@ -49,17 +50,41 @@ class RegistrationViewModel(private val authRepository: InAuthRepository) : View
     private val _form = MutableStateFlow(RegistrationFormState())
     val form: StateFlow<RegistrationFormState> = _form.asStateFlow()
 
-    fun onChangeNombre(v: String) = _form.update { it.copy(nombre = v, nombreError = null, error = null) }
-    fun onChangeRun(v: String) = _form.update { it.copy(run = v, runError = null, error = null) }
-    fun onChangeApellido(v: String) = _form.update { it.copy(apellido = v, apellidoError = null, error = null) }
-    fun onChangeEmail(v: String) = _form.update { it.copy(email = v, emailError = null, error = null) }
-    fun onChangeContrasena(v: String) = _form.update { it.copy(contrasena = v, contrasenaError = null, error = null) }
-    fun onChangeContrasenaConfirm(v: String) = _form.update { it.copy(contrasenaConfirm = v, contrasenaConfirmError = null, error = null) }
-    fun onChangeFechaNacimiento(v: String) = _form.update { it.copy(fechaNacimiento = v, fechaNacimientoError = null, error = null) }
-    fun onChangeRegion(v: String) = _form.update { it.copy(region = v, regionError = null, error = null) }
-    fun onChangeComuna(v: String) = _form.update { it.copy(comuna = v, comunaError = null, error = null) }
-    fun onChangeDireccion(v: String) = _form.update { it.copy(direccion = v, direccionError = null, error = null) }
-    fun onChangeAceptaTerminos(v: Boolean) = _form.update { it.copy(aceptaTerminos = v, aceptaTerminosError = null, error = null) } // Nueva función
+    fun onChangeNombre(v: String) =
+        _form.update { it.copy(nombre = v, nombreError = null, error = null) }
+
+    fun onChangeApellidos(v: String) =
+        _form.update { it.copy(apellidos = v, apellidosError = null, error = null) }
+
+    fun onChangeRun(v: String) =
+        _form.update { it.copy(run = v, runError = null, error = null) }
+
+    fun onChangeEmail(v: String) =
+        _form.update { it.copy(email = v, emailError = null, error = null) }
+
+    fun onChangeContrasena(v: String) =
+        _form.update { it.copy(contrasena = v, contrasenaError = null, error = null) }
+
+    fun onChangeContrasenaConfirm(v: String) =
+        _form.update { it.copy(contrasenaConfirm = v, contrasenaConfirmError = null, error = null) }
+
+    fun onChangeFechaNacimiento(v: String) =
+        _form.update { it.copy(fechaNacimiento = v, fechaNacimientoError = null, error = null) }
+
+    fun onChangeRegion(v: String) =
+        _form.update { it.copy(region = v, regionError = null, error = null) }
+
+    fun onChangeComuna(v: String) =
+        _form.update { it.copy(comuna = v, comunaError = null, error = null) }
+
+    fun onChangeDireccion(v: String) =
+        _form.update { it.copy(direccion = v, direccionError = null, error = null) }
+
+    fun onChangeCodigoReferido(v: String) =
+        _form.update { it.copy(codigoReferido = v, error = null) }
+
+    fun onChangeAceptaTerminos(checked: Boolean) =
+        _form.update { it.copy(aceptaTerminos = checked, aceptaTerminosError = null, error = null) }
 
     fun limpiarFormulario() {
         _form.value = RegistrationFormState()
@@ -68,97 +93,90 @@ class RegistrationViewModel(private val authRepository: InAuthRepository) : View
     fun registrar() = viewModelScope.launch {
         val current = _form.value
         val nombre = current.nombre.trim()
+        val apellidos = current.apellidos.trim()
         val run = current.run.trim()
-        val apellido = current.apellido.trim()
         val email = current.email.trim()
         val contrasena = current.contrasena
         val contrasenaConfirm = current.contrasenaConfirm
-        val fechaNacimiento = current.fechaNacimiento.trim()
+        val fechaNacimientoTexto = current.fechaNacimiento.trim()
         val region = current.region.trim()
         val comuna = current.comuna.trim()
         val direccion = current.direccion.trim()
+        val codigoReferido = current.codigoReferido.trim().ifBlank { null }
         val aceptaTerminos = current.aceptaTerminos
 
         var hasError = false
         var firstError: String? = null
 
-        // ... (resto de validaciones)
-
-        if (!aceptaTerminos) {
-            hasError = true
-            val msg = "Debes aceptar los Términos y Condiciones"
-            _form.update { it.copy(aceptaTerminosError = msg) }
-            if (firstError == null) firstError = msg
-        }
-
         if (nombre.isBlank()) {
             hasError = true
             val msg = "El nombre no puede estar vacío"
             _form.update { it.copy(nombreError = msg) }
-            if (firstError == null) firstError = msg
+            firstError = firstError ?: msg
         }
 
-        if (apellido.isBlank()) {
+        if (apellidos.isBlank()) {
             hasError = true
-            val msg = "El apellido no puede estar vacío"
-            _form.update { it.copy(apellidoError = msg) }
-            if (firstError == null) firstError = msg
+            val msg = "Los apellidos no pueden estar vacíos"
+            _form.update { it.copy(apellidosError = msg) }
+            firstError = firstError ?: msg
         }
 
         if (run.isBlank()) {
             hasError = true
-            val msg = "El RUN no puede estar vacío"
+            val msg = "El RUN es obligatorio"
             _form.update { it.copy(runError = msg) }
-            if (firstError == null) firstError = msg
+            firstError = firstError ?: msg
         } else if (!validarRun(run)) {
             hasError = true
-            val msg = "El RUN no es válido"
+            val msg = "RUN inválido"
             _form.update { it.copy(runError = msg) }
-            if (firstError == null) firstError = msg
+            firstError = firstError ?: msg
         }
 
         if (email.isBlank()) {
             hasError = true
             val msg = "El email no puede estar vacío"
             _form.update { it.copy(emailError = msg) }
-            if (firstError == null) firstError = msg
+            firstError = firstError ?: msg
         } else if (!validarEmail(email)) {
             hasError = true
             val msg = "El email no es válido"
             _form.update { it.copy(emailError = msg) }
-            if (firstError == null) firstError = msg
+            firstError = firstError ?: msg
         }
 
         if (contrasena.isBlank()) {
             hasError = true
             val msg = "La contraseña no puede estar vacía"
             _form.update { it.copy(contrasenaError = msg) }
-            if (firstError == null) firstError = msg
+            firstError = firstError ?: msg
         } else if (!validarContrasena(contrasena)) {
             hasError = true
             val msg = "La contraseña debe tener 8+ caracteres, mayúscula, minúscula, dígito y símbolo."
             _form.update { it.copy(contrasenaError = msg) }
-            if (firstError == null) firstError = msg
+            firstError = firstError ?: msg
         }
 
+        // Validación de confirmación de contraseña
         if (contrasenaConfirm.isBlank()) {
             hasError = true
             val msg = "Debes confirmar la contraseña"
             _form.update { it.copy(contrasenaConfirmError = msg) }
-            if (firstError == null) firstError = msg
+            firstError = firstError ?: msg
         } else if (contrasena != contrasenaConfirm) {
             hasError = true
             val msg = "Las contraseñas no coinciden"
             _form.update { it.copy(contrasenaConfirmError = msg) }
-            if (firstError == null) firstError = msg
+            firstError = firstError ?: msg
         }
 
-        val dob = if (fechaNacimiento.isBlank()) null else parseDate(fechaNacimiento)
-        if (fechaNacimiento.isBlank()) {
+        val dob = if (fechaNacimientoTexto.isBlank()) null else parseDate(fechaNacimientoTexto)
+        if (fechaNacimientoTexto.isBlank()) {
             hasError = true
             val msg = "La fecha de nacimiento no puede estar vacía"
             _form.update { it.copy(fechaNacimientoError = msg) }
-            if (firstError == null) firstError = msg
+            firstError = firstError ?: msg
         } else if (dob == null) {
             hasError = true
             val msg = "Usa formato dd/MM/yyyy."
@@ -171,12 +189,31 @@ class RegistrationViewModel(private val authRepository: InAuthRepository) : View
             if (firstError == null) firstError = msg
         }
 
-        if (region.isBlank() || comuna.isBlank() || direccion.isBlank()) {
+        if (region.isBlank()) {
             hasError = true
-            val msg = "La región, comuna y dirección son obligatorias"
-            if(region.isBlank()) _form.update { it.copy(regionError = "Selecciona una región") }
-            if(comuna.isBlank()) _form.update { it.copy(comunaError = "Selecciona una comuna") }
-            if(direccion.isBlank()) _form.update { it.copy(direccionError = "Ingresa una dirección") }
+            val msg = "La región es obligatoria"
+            _form.update { it.copy(regionError = msg) }
+            if (firstError == null) firstError = msg
+        }
+
+        if (comuna.isBlank()) {
+            hasError = true
+            val msg = "La comuna es obligatoria"
+            _form.update { it.copy(comunaError = msg) }
+            if (firstError == null) firstError = msg
+        }
+
+        if (direccion.isBlank()) {
+            hasError = true
+            val msg = "La dirección es obligatoria"
+            _form.update { it.copy(direccionError = msg) }
+            if (firstError == null) firstError = msg
+        }
+
+        if (!aceptaTerminos) {
+            hasError = true
+            val msg = "Debes aceptar los términos y condiciones"
+            _form.update { it.copy(aceptaTerminosError = msg) }
             if (firstError == null) firstError = msg
         }
 
@@ -185,20 +222,22 @@ class RegistrationViewModel(private val authRepository: InAuthRepository) : View
             return@launch
         }
 
+        val fechaNacimientoIso = dob!!.format(DateTimeFormatter.ISO_LOCAL_DATE)
+
         _form.update { it.copy(isLoading = true, error = null) }
 
         try {
             authRepository.registrar(
-                nombre = nombre,
                 run = run,
-                apellido = apellido,
-                email = email,
+                nombre = nombre,
+                apellidos = apellidos,
+                correo = email,
                 contrasena = contrasena,
-                fechaNacimiento = fechaNacimiento,
-                telefono = null, // Teléfono es opcional por ahora
+                fechaNacimiento = fechaNacimientoIso,
                 region = region,
                 comuna = comuna,
-                direccion = direccion
+                direccion = direccion,
+                codigoReferido = codigoReferido
             )
             _form.update { it.copy(isLoading = false, isSuccess = true) }
         } catch (t: Throwable) {
@@ -209,6 +248,32 @@ class RegistrationViewModel(private val authRepository: InAuthRepository) : View
     private fun validarEmail(email: String): Boolean {
         val pattern = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$", Pattern.CASE_INSENSITIVE)
         return pattern.matcher(email).matches()
+    }
+
+    private fun validarRun(run: String): Boolean {
+        val normalized = run.replace(".", "").uppercase()
+        val match = Regex("^[0-9]{7,8}-[0-9K]$")
+        return match.matches(normalized) && validarDigitoVerificador(normalized)
+    }
+
+    private fun validarDigitoVerificador(runNormalizado: String): Boolean {
+        val parts = runNormalizado.split("-")
+        if (parts.size != 2) return false
+        val numberPart = parts[0]
+        val dv = parts[1]
+        var sum = 0
+        var multiplier = 2
+        for (i in numberPart.length - 1 downTo 0) {
+            sum += Character.getNumericValue(numberPart[i]) * multiplier
+            multiplier = if (multiplier == 7) 2 else multiplier + 1
+        }
+        val remainder = 11 - (sum % 11)
+        val expected = when (remainder) {
+            11 -> "0"
+            10 -> "K"
+            else -> remainder.toString()
+        }
+        return expected.equals(dv, ignoreCase = true)
     }
 
     private fun esMayorDeEdad(dob: LocalDate): Boolean {
@@ -224,35 +289,7 @@ class RegistrationViewModel(private val authRepository: InAuthRepository) : View
     }
 
     private fun validarContrasena(contrasena: String): Boolean {
-        val pattern = Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$")
+        val pattern = Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$") // al menos debe tener 8 caracteres, 1 minúscula, 1 mayúscula, 1 dígito y 1 símbolo
         return pattern.matcher(contrasena).matches()
-    }
-
-    private fun validarRun(run: String): Boolean {
-        val cleanRun = run.replace(".", "").replace("-", "")
-        if (cleanRun.length !in 8..9) return false
-
-        val dv = cleanRun.last().uppercaseChar()
-        val numero = cleanRun.substring(0, cleanRun.length - 1).toIntOrNull() ?: return false
-
-        var suma = 0
-        var multiplicador = 2
-        var rutTemp = numero
-
-        while (rutTemp != 0) {
-            suma += (rutTemp % 10) * multiplicador
-            rutTemp /= 10
-            multiplicador++
-            if (multiplicador > 7) multiplicador = 2
-        }
-
-        val resto = 11 - (suma % 11)
-        val dvCalculado = when (resto) {
-            11 -> '0'
-            10 -> 'K'
-            else -> resto.toString().first()
-        }
-
-        return dv == dvCalculado
     }
 }

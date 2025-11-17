@@ -153,9 +153,23 @@ fun RegistrationScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Campos de texto...
-            OutlinedTextField(value = form.nombre, onValueChange = vm::onChangeNombre, label = { Text("Nombre") }, isError = form.nombreError != null, supportingText = { form.nombreError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(
+                value = form.nombre,
+                onValueChange = vm::onChangeNombre,
+                label = { Text("Nombre") },
+                isError = form.nombreError != null,
+                supportingText = { form.nombreError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
+                modifier = Modifier.fillMaxWidth()
+            )
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(value = form.apellido, onValueChange = vm::onChangeApellido, label = { Text("Apellido") }, isError = form.apellidoError != null, supportingText = { form.apellidoError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(
+                value = form.apellidos,
+                onValueChange = vm::onChangeApellidos,
+                label = { Text("Apellidos") },
+                isError = form.apellidosError != null,
+                supportingText = { form.apellidosError?.let { Text(it, color = MaterialTheme.colorScheme.error) } },
+                modifier = Modifier.fillMaxWidth()
+            )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = form.run,
@@ -203,6 +217,15 @@ fun RegistrationScreen(
                     supportingText = { form.direccionError?.let { Text(it, color = MaterialTheme.colorScheme.error) } ?: form.comunaError?.let { Text(it, color = MaterialTheme.colorScheme.error) } ?: form.regionError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }
                 )
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = form.codigoReferido,
+                onValueChange = vm::onChangeCodigoReferido,
+                label = { Text("Código referido (opcional)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 

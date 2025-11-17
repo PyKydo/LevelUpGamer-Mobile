@@ -15,12 +15,15 @@ import cl.duoc.levelupgamer.model.local.CarritoItemEntity
 
 fun UsuarioRespuestaDto.toDomain(): Usuario = Usuario(
     id = id,
+    run = run,
     nombre = nombre,
-    apellido = apellido,
-    email = email,
+    apellido = apellidos,
+    email = correo,
     rol = rol,
     fechaNacimiento = fechaNacimiento.orEmpty(),
     fotoPerfilUrl = fotoPerfilUrl,
+    region = region,
+    comuna = comuna,
     direccion = direccion,
     telefono = telefono,
     puntos = puntos ?: 0
