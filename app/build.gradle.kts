@@ -88,7 +88,13 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
-    testImplementation(libs.junit)
+    // Configuración de Pruebas Unitarias Limpia
+    testImplementation(libs.junit) // JUnit 4
+    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+
+    // Dependencias de Android Testing (UI)
     // Unit test libraries
     testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
