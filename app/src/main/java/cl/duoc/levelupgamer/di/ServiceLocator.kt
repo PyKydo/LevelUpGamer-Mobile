@@ -47,7 +47,7 @@ class ServiceLocator private constructor(context: Context) {
 
     val carritoRepository: CarritoRepository by lazy {
         CarritoRepository(
-            dao = databaseInternal.carritoItemDao(),
+            dao = databaseInternal.carritoItemDao()
         )
     }
 
