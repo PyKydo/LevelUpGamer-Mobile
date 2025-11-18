@@ -97,7 +97,7 @@ class BlogDetailViewModel(private val repo: BlogRepository, private val blogId: 
 
         return@withContext try {
             suspendCancellableCoroutine<String> { cont ->
-                // Cancel the OkHttp call if the coroutine is cancelled
+
                 cont.invokeOnCancellation {
                     try {
                         call.cancel()

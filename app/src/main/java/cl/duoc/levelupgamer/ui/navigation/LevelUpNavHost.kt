@@ -94,7 +94,7 @@ fun LevelUpNavHost(
     Scaffold(
         bottomBar = {
 
-            // Do not show bottom navigation on the Cart screen
+
             val show = currentRoute == AppScreen.Catalog.route || currentRoute == AppScreen.Home.route || currentRoute == AppScreen.Blogs.route
             if (show) {
                 NavigationBar {

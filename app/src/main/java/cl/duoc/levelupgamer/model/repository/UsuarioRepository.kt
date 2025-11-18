@@ -88,17 +88,24 @@ class UsuarioRepository(
 
         if (userDto != null) {
             val user = userDto.toDomain()
+
+            val puntosBalance = try {
+                secureApi.getPoints(user.id).toDomain()
+            } catch (_: Exception) {
+                null
+            }
+            val userWithPoints = if (puntosBalance != null) user.copy(puntos = puntosBalance.puntos) else user
             tokenStore.persistSession(
                 TokenSession(
                     accessToken = accessToken,
                     refreshToken = refreshToken,
-                    userId = user.id,
-                    email = user.email,
-                    role = resolvedRole ?: user.rol
+                    userId = userWithPoints.id,
+                    email = userWithPoints.email,
+                    role = resolvedRole ?: userWithPoints.rol
                 )
             )
-            _usuarioActual.value = user
-            return@withContext user
+            _usuarioActual.value = userWithPoints
+            return@withContext userWithPoints
         }
 
         val userId = response.usuarioId
@@ -120,14 +127,22 @@ class UsuarioRepository(
             throw IllegalStateException("No se pudo obtener la información del usuario.", t)
         }
 
+
+        val fetchedPoints = try {
+            secureApi.getPoints(fetchedUser.id).toDomain()
+        } catch (_: Exception) {
+            null
+        }
+        val fetchedWithPoints = if (fetchedPoints != null) fetchedUser.copy(puntos = fetchedPoints.puntos) else fetchedUser
+
         tokenStore.persistSession(
             provisionalSession.copy(
-                email = fetchedUser.email,
-                role = resolvedRole ?: fetchedUser.rol
+                email = fetchedWithPoints.email,
+                role = resolvedRole ?: fetchedWithPoints.rol
             )
         )
-        _usuarioActual.value = fetchedUser
-        fetchedUser
+        _usuarioActual.value = fetchedWithPoints
+        fetchedWithPoints
     }
 
     override suspend fun cerrarSesion() {
@@ -190,7 +205,13 @@ class UsuarioRepository(
         val userId = session.userId ?: return
         try {
             val user = withContext(ioDispatcher) { secureApi.getUser(userId).toDomain() }
-            _usuarioActual.value = user
+            val puntosBalance = try {
+                secureApi.getPoints(user.id).toDomain()
+            } catch (_: Exception) {
+                null
+            }
+            val userWithPoints = if (puntosBalance != null) user.copy(puntos = puntosBalance.puntos) else user
+            _usuarioActual.value = userWithPoints
         } catch (_: Exception) {
 
 

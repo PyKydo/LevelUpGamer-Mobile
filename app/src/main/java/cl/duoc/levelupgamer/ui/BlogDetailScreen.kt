@@ -63,7 +63,7 @@ fun BlogDetailScreen(
         contentText?.let { renderer.render(parser.parse(it)) } ?: ""
     }
 
-    // Capture composable-only values outside of non-composable lambdas
+
     val onBackgroundColorArgb = MaterialTheme.colorScheme.onBackground.toArgb()
 
     val imageModel = remember(blog.imageUrl) {

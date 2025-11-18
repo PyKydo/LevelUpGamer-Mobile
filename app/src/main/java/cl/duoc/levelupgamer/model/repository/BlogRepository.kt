@@ -18,8 +18,8 @@ class BlogRepository(
     suspend fun obtenerBlogs(): List<Blog> = withContext(ioDispatcher) {
         val dtos = api.getBlogPosts()
         dtos.map { dto ->
-            // Map API DTO to app model using the fields provided by the backend.
-            // The backend returns descripcionCorta (short description), contenidoUrl (URL to markdown), imagenUrl and altImagen.
+
+
             val summary = dto.descripcionCorta ?: ""
             val content = dto.contenidoUrl ?: ""
             val image = dto.imagenUrl
@@ -40,9 +40,9 @@ class BlogRepository(
         return@withContext try {
             val dto = api.getBlogPost(id)
             val summary = dto.descripcionCorta ?: ""
-            // Try to map content: if API provides 'contenido' use it, otherwise use contenidoUrl
+
             val contentField = try {
-                // Some API variants may include a 'contenido' field; attempt to use it via reflection-safe access
+
                 val contenidoProp = dto.javaClass.getDeclaredField("contenido")
                 contenidoProp.isAccessible = true
                 contenidoProp.get(dto) as? String

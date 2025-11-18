@@ -98,10 +98,10 @@ fun ShoppingCartScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 16.dp, vertical = 12.dp),
-                    // Use SpaceBetween so the summary stays pinned to the bottom
+
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Header removed to avoid duplicate "Resumen" — keep only bottom summary with payment button
+
                     if (isWideLayout) {
                         Row(
                             modifier = Modifier.fillMaxSize(),
@@ -167,7 +167,7 @@ private fun EmptyCartState() {
     }
 }
 
-// Top cart summary removed; bottom `CheckoutSummaryPreview` remains as the single cart summary.
+
 
 @Composable
 private fun CartItemsSection(
@@ -177,7 +177,7 @@ private fun CartItemsSection(
     onRemoveItem: (Long) -> Unit
 ) {
     Card(
-        // Ensure the items section fills available vertical space when a weight is provided
+
         modifier = modifier
             .fillMaxWidth()
             .fillMaxHeight(),

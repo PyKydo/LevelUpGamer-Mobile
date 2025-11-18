@@ -2,6 +2,7 @@ package cl.duoc.levelupgamer.model.repository
 
 import cl.duoc.levelupgamer.model.local.CarritoItemEntity
 import cl.duoc.levelupgamer.model.local.dao.CarritoItemDao
+import cl.duoc.levelupgamer.data.remote.api.LevelUpApi
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -12,22 +13,28 @@ class CarritoRepository(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
 
+
+
+
+    constructor(dao: CarritoItemDao, api: LevelUpApi, ioDispatcher: CoroutineDispatcher = Dispatchers.IO) : this(dao, ioDispatcher)
+
     fun observarCarrito(usuarioId: Long): Flow<List<CarritoItemEntity>> = dao.observarPorUsuario(usuarioId)
 
     suspend fun agregar(usuarioId: Long, productoId: Long, cantidad: Int = 1) {
         require(cantidad > 0) { "La cantidad debe ser mayor a cero" }
         withContext(ioDispatcher) {
-            val existente = dao.obtenerPorUsuarioYProducto(usuarioId, productoId)
-            if (existente != null) {
-                dao.actualizar(existente.copy(cantidad = existente.cantidad + cantidad))
+
+            val existing = dao.obtenerPorUsuarioYProducto(usuarioId, productoId)
+            if (existing != null) {
+                dao.actualizar(existing.copy(cantidad = existing.cantidad + cantidad))
             } else {
-                dao.insertar(
-                    CarritoItemEntity(
-                        usuarioId = usuarioId,
-                        productoId = productoId,
-                        cantidad = cantidad
-                    )
+                val entity = CarritoItemEntity(
+                    id = 0L,
+                    usuarioId = usuarioId,
+                    productoId = productoId,
+                    cantidad = cantidad
                 )
+                dao.insertar(entity)
             }
         }
     }
@@ -55,6 +62,7 @@ class CarritoRepository(
 
     suspend fun limpiarCarrito(usuarioId: Long) {
         withContext(ioDispatcher) {
+
             dao.eliminarPorUsuario(usuarioId)
         }
     }

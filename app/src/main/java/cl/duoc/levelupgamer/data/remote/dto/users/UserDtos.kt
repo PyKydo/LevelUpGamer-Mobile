@@ -40,7 +40,7 @@ data class UsuarioRespuestaDto(
     @SerializedName("comuna") val comuna: String? = null,
     @SerializedName("direccion") val direccion: String? = null,
     @SerializedName("telefono") val telefono: String? = null,
-    @SerializedName("puntos") val puntos: Int? = null
+    @SerializedName(value = "puntos", alternate = ["puntosLevelUp"]) val puntos: Int? = null
 )
 
 data class RolesResponse(

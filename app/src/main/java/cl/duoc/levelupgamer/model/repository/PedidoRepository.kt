@@ -31,6 +31,20 @@ class PedidoRepository(
             ).toDomain()
         }
 
+
+    suspend fun crearPedido(userId: Long, direccionEnvio: String, notas: String?): Pedido =
+        withContext(ioDispatcher) {
+
+            api.createOrder(
+                PedidoCrearDto(
+                    usuarioId = userId,
+                    items = emptyList(),
+                    direccionEnvio = direccionEnvio,
+                    notas = notas
+                )
+            ).toDomain()
+        }
+
     suspend fun obtenerPedidos(userId: Long): List<Pedido> = withContext(ioDispatcher) {
         api.getOrdersForUser(userId).map { it.toDomain() }
     }
