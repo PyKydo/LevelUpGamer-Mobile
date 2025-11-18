@@ -2,15 +2,18 @@ package cl.duoc.levelupgamer.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -20,6 +23,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,11 +41,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cl.duoc.levelupgamer.model.Producto
@@ -49,6 +56,7 @@ import cl.duoc.levelupgamer.model.local.CarritoItemEntity
 import cl.duoc.levelupgamer.viewmodel.CheckoutUiState
 import cl.duoc.levelupgamer.service.NotificationService
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,7 +71,8 @@ fun ShoppingCartScreen(
     onRemoveItem: (Long) -> Unit,
     onCheckout: (String, String?) -> Unit,
     onCheckoutStateConsumed: () -> Unit,
-    onCheckoutSuccess: () -> Unit
+    onCheckoutSuccess: () -> Unit,
+    onGoToPayment: () -> Unit
 ) {
     val lineItems = remember(items, productos) {
         items.mapNotNull { item ->
@@ -72,30 +81,10 @@ fun ShoppingCartScreen(
         }
     }
     val totalPrice = lineItems.sumOf { it.producto.precio * it.item.cantidad }
+    val totalUnits = lineItems.sumOf { it.item.cantidad }
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    var direccionEnvio by remember(initialAddress) { mutableStateOf(initialAddress.orEmpty()) }
-    var notas by remember { mutableStateOf("") }
-    var direccionError by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(checkoutState.pedidoConfirmado) {
-        checkoutState.pedidoConfirmado?.let { pedido ->
-            NotificationService(context).mostrarNotificacionCompraExitosa()
-            snackbarHostState.showSnackbar("Pedido #${pedido.id} confirmado")
-            notas = ""
-            onCheckoutStateConsumed()
-            delay(1_000)
-            onCheckoutSuccess()
-        }
-    }
-
-    LaunchedEffect(checkoutState.error) {
-        checkoutState.error?.let { msg ->
-            snackbarHostState.showSnackbar(msg)
-            onCheckoutStateConsumed()
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -107,131 +96,73 @@ fun ShoppingCartScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    titleContentColor = MaterialTheme.colorScheme.onSecondary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSecondary
+
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
-        if (lineItems.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Tu carrito está vacío",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontStyle = FontStyle.Italic
-                )
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(16.dp),
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+                    if (lineItems.isEmpty()) {
+                        EmptyCartState()
+                    } else {
+                val constraintsMaxWidth = maxWidth
+                val isWideLayout = constraintsMaxWidth >= 720.dp
+                Column(
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(lineItems, key = { it.item.id }) { lineItem ->
-                        CartItemCard(
-                            producto = lineItem.producto,
-                            quantity = lineItem.item.cantidad,
-                            canDecrease = lineItem.item.cantidad > 1,
-                            onDecrease = { onChangeQuantity(lineItem.item.id, lineItem.item.cantidad - 1) },
-                            onIncrease = { onChangeQuantity(lineItem.item.id, lineItem.item.cantidad + 1) },
-                            onRemove = { onRemoveItem(lineItem.item.id) }
-                        )
-                    }
-                }
-                if (lineItems.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
-                        value = direccionEnvio,
-                        onValueChange = {
-                            direccionEnvio = it
-                            if (direccionError != null) direccionError = null
-                        },
-                        label = { Text("Dirección de envío") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        isError = direccionError != null,
-                        supportingText = {
-                            direccionError?.let { error ->
-                                Text(text = error, color = MaterialTheme.colorScheme.error)
-                            }
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = notas,
-                        onValueChange = { notas = it },
-                        label = { Text("Notas adicionales (opcional)") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        minLines = 2
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    CartInformationHeader(totalUnits = totalUnits, totalPrice = totalPrice)
+                    if (isWideLayout) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Text("Total", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                            Text(
-                                "$${String.format("%.2f", totalPrice)}",
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.ExtraBold
+                            CartItemsSection(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
+                                lineItems = lineItems,
+                                onChangeQuantity = onChangeQuantity,
+                                onRemoveItem = onRemoveItem
                             )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = {
-                                direccionError = null
-                                val trimmedAddress = direccionEnvio.trim()
-                                if (trimmedAddress.isBlank()) {
-                                    direccionError = "Ingresa una dirección de envío"
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("La dirección de envío es obligatoria")
-                                    }
-                                } else {
-                                    onCheckout(trimmedAddress, notas.ifBlank { null })
+                            Column(
+                                modifier = Modifier
+                                    .widthIn(max = constraintsMaxWidth * 0.45f)
+                                    .fillMaxHeight(),
+                                verticalArrangement = Arrangement.Bottom
+                            ) {
+                                Button(
+                                    onClick = { onGoToPayment() },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                ) {
+                                    Text("Ir a Pago", color = MaterialTheme.colorScheme.onPrimary)
                                 }
-                            },
-                            enabled = lineItems.isNotEmpty() && !checkoutState.isProcessing,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondary
-                            )
-                        ) {
-                            if (checkoutState.isProcessing) {
-                                CircularProgressIndicator(
-                                    color = MaterialTheme.colorScheme.onSecondary,
-                                    strokeWidth = 2.dp,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            } else {
-                                Text("Finalizar Compra", color = MaterialTheme.colorScheme.onSecondary)
                             }
+                        }
+                    } else {
+                        CartItemsSection(
+                            modifier = Modifier.weight(1f),
+                            lineItems = lineItems,
+                            onChangeQuantity = onChangeQuantity,
+                            onRemoveItem = onRemoveItem
+                        )
+                        Button(
+                            onClick = { onGoToPayment() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text("Ir a Pago", color = MaterialTheme.colorScheme.onPrimary)
                         }
                     }
                 }
@@ -241,3 +172,183 @@ fun ShoppingCartScreen(
 }
 
 private data class CartLineItem(val producto: Producto, val item: CarritoItemEntity)
+
+@Composable
+private fun EmptyCartState() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "Tu carrito está vacío",
+                style = MaterialTheme.typography.headlineSmall,
+                fontStyle = FontStyle.Italic
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Explora el catálogo para comenzar una compra",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun CartInformationHeader(totalUnits: Int, totalPrice: Double) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text("Resumen del carrito", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text(
+                    text = "$totalUnits ${if (totalUnits == 1) "artículo" else "artículos"}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text(
+                text = "$${String.format("%.2f", totalPrice)}",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.ExtraBold
+            )
+        }
+    }
+}
+
+@Composable
+private fun CartItemsSection(
+    modifier: Modifier = Modifier,
+    lineItems: List<CartLineItem>,
+    onChangeQuantity: (Long, Int) -> Unit,
+    onRemoveItem: (Long) -> Unit
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(lineItems, key = { it.item.id }) { lineItem ->
+                CartItemCard(
+                    producto = lineItem.producto,
+                    quantity = lineItem.item.cantidad,
+                    canDecrease = lineItem.item.cantidad > 1,
+                    onDecrease = { onChangeQuantity(lineItem.item.id, lineItem.item.cantidad - 1) },
+                    onIncrease = { onChangeQuantity(lineItem.item.id, lineItem.item.cantidad + 1) },
+                    onRemove = { onRemoveItem(lineItem.item.id) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CheckoutSummaryCard(
+    modifier: Modifier = Modifier,
+    totalPrice: Double,
+    direccionEnvio: String,
+    direccionError: String?,
+    notas: String,
+    isProcessing: Boolean,
+    onAddressChanged: (String) -> Unit,
+    onNotesChanged: (String) -> Unit,
+    onCheckout: () -> Unit
+) {
+    Card(
+        modifier = modifier,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text("Información de entrega", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            OutlinedTextField(
+                value = direccionEnvio,
+                onValueChange = onAddressChanged,
+                label = { Text("Dirección de envío") },
+                modifier = Modifier.fillMaxWidth(),
+                isError = direccionError != null,
+                supportingText = {
+                    direccionError?.let { error ->
+                        Text(text = error, color = MaterialTheme.colorScheme.error)
+                    }
+                }
+            )
+            OutlinedTextField(
+                value = notas,
+                onValueChange = onNotesChanged,
+                label = { Text("Notas adicionales (opcional)") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 2
+            )
+            HorizontalDivider()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Total a pagar", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "$${String.format("%.2f", totalPrice)}",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+            Button(
+                onClick = onCheckout,
+                enabled = !isProcessing,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                if (isProcessing) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onSecondary,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(18.dp)
+                    )
+                } else {
+                    Text("Finalizar Compra", color = MaterialTheme.colorScheme.onPrimary)
+                }
+            }
+        }
+    }
+}
+
+private fun validateAndCheckout(
+    direccionEnvio: String,
+    notas: String,
+    setError: (String?) -> Unit,
+    scope: CoroutineScope,
+    snackbarHostState: SnackbarHostState,
+    onCheckout: (String, String?) -> Unit
+) {
+    setError(null)
+    val trimmedAddress = direccionEnvio.trim()
+    if (trimmedAddress.isBlank()) {
+        setError("Ingresa una dirección de envío")
+        scope.launch {
+            snackbarHostState.showSnackbar("La dirección de envío es obligatoria")
+        }
+    } else {
+        onCheckout(trimmedAddress, notas.ifBlank { null })
+    }
+}

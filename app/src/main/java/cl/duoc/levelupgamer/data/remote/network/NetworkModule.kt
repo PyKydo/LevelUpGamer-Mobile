@@ -30,6 +30,7 @@ class NetworkModule(
         .connectTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .readTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .writeTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+        .callTimeout(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .addInterceptor(loggingInterceptor)
         .build()
 
@@ -56,6 +57,6 @@ class NetworkModule(
     val securedApi: LevelUpApi = secureRetrofit.create(LevelUpApi::class.java)
 
     companion object {
-        private const val DEFAULT_TIMEOUT_SECONDS = 30L
+        private const val DEFAULT_TIMEOUT_SECONDS = 10L
     }
 }

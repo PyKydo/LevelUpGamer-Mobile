@@ -21,7 +21,7 @@ class ChangePasswordViewModelTest : StringSpec({
 
     val testDispatcher = StandardTestDispatcher()
     lateinit var viewModel: ChangePasswordViewModel
-    val authRepository: UsuarioRepository = mockk() // Se mockea la clase concreta
+    val authRepository: UsuarioRepository = mockk() 
 
     beforeTest {
         Dispatchers.setMain(testDispatcher)
@@ -68,7 +68,7 @@ class ChangePasswordViewModelTest : StringSpec({
 
     "El cambio debe fallar si las contraseñas nuevas no coinciden" {
         runTest(testDispatcher) {
-            val repository: UsuarioRepository = mockk(relaxed = true) // Se mockea la clase concreta
+            val repository: UsuarioRepository = mockk(relaxed = true) 
             val vm = ChangePasswordViewModel(repository)
 
             vm.onCurrentPasswordChange("passActual123")

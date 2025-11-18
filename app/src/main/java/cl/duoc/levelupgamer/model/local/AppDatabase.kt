@@ -11,7 +11,7 @@ import cl.duoc.levelupgamer.model.local.dao.ProductoDao
 
 @Database(
 	entities = [Producto::class, CarritoItemEntity::class],
-	version = 4,
+	version = 5,
 	exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

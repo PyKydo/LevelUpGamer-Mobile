@@ -1,14 +1,22 @@
 package cl.duoc.levelupgamer.data.remote.dto.pedidos
 
+import com.google.gson.annotations.SerializedName
+
 data class PedidoCrearDto(
-    val userId: Long,
+    val usuarioId: Long,
+    val items: List<PedidoProductoCrearDto>,
     val direccionEnvio: String,
     val notas: String? = null
 )
 
+data class PedidoProductoCrearDto(
+    val productoId: Long,
+    val cantidad: Int
+)
+
 data class PedidoRespuestaDto(
     val id: Long,
-    val userId: Long,
+    @SerializedName("usuarioId") val userId: Long,
     val total: Double,
     val estado: String,
     val items: List<PedidoProductoDto>
@@ -16,7 +24,7 @@ data class PedidoRespuestaDto(
 
 data class PedidoProductoDto(
     val productoId: Long,
-    val nombre: String,
+    @SerializedName("nombreProducto") val nombre: String,
     val cantidad: Int,
     val precioUnitario: Double
 )

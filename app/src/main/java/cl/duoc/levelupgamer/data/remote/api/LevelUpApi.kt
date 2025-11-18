@@ -16,6 +16,7 @@ import cl.duoc.levelupgamer.data.remote.dto.users.RolesResponse
 import cl.duoc.levelupgamer.data.remote.dto.users.UsuarioRegistroDto
 import cl.duoc.levelupgamer.data.remote.dto.users.UsuarioRespuestaDto
 import cl.duoc.levelupgamer.data.remote.dto.users.UsuarioUpdateDto
+import okhttp3.ResponseBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -89,6 +90,9 @@ interface LevelUpApi {
 
     @GET("api/blog-posts/{id}")
     suspend fun getBlogPost(@Path("id") id: Long): BlogDto
+
+    @GET("api/blog-posts/{id}/content")
+    suspend fun getBlogContent(@Path("id") id: Long): ResponseBody
 
     @POST("api/contact-messages")
     suspend fun sendContactMessage(@Body body: ContactoDto): ContactoDto

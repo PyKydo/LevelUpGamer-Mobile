@@ -13,11 +13,18 @@ class PedidoRepository(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
 
-    suspend fun crearPedido(userId: Long, direccionEnvio: String, notas: String?): Pedido =
+    suspend fun crearPedido(userId: Long, items: List<cl.duoc.levelupgamer.model.local.CarritoItemEntity>, direccionEnvio: String, notas: String?): Pedido =
         withContext(ioDispatcher) {
+            val itemsDto = items.map { carritoItem ->
+                cl.duoc.levelupgamer.data.remote.dto.pedidos.PedidoProductoCrearDto(
+                    productoId = carritoItem.productoId,
+                    cantidad = carritoItem.cantidad
+                )
+            }
             api.createOrder(
-                PedidoCrearDto(
-                    userId = userId,
+                cl.duoc.levelupgamer.data.remote.dto.pedidos.PedidoCrearDto(
+                    usuarioId = userId,
+                    items = itemsDto,
                     direccionEnvio = direccionEnvio,
                     notas = notas
                 )

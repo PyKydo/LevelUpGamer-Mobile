@@ -77,7 +77,7 @@ fun LoginScreen(
                 onValueChange = vm::onChangeEmail,
                 label = { Text("Email") },
                 singleLine = true,
-                // Solución definitiva: Especificamos el comportamiento del teclado
+
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next

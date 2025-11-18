@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import cl.duoc.levelupgamer.util.NetworkErrorMapper
 
 data class LoginFormState(
     val email: String = "",
@@ -61,7 +62,8 @@ class LoginViewModel(private val authRepository: InAuthRepository) : ViewModel()
             authRepository.iniciarSesion(email = email, contrasena = contrasena)
             _form.update { it.copy(isLoading = false, isSuccess = true) }
         } catch (t: Throwable) {
-            _form.update { it.copy(isLoading = false, error = t.message ?: "No se pudo iniciar sesión") }
+            val msg = NetworkErrorMapper.map(t)
+            _form.update { it.copy(isLoading = false, error = msg) }
         }
     }
 

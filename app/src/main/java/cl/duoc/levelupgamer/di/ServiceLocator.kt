@@ -47,8 +47,7 @@ class ServiceLocator private constructor(context: Context) {
 
     val carritoRepository: CarritoRepository by lazy {
         CarritoRepository(
-            dao = databaseInternal.carritoItemDao(),
-            api = networkModule.securedApi
+            dao = databaseInternal.carritoItemDao()
         )
     }
 
@@ -58,6 +57,10 @@ class ServiceLocator private constructor(context: Context) {
 
     val gamificacionRepository: GamificacionRepository by lazy {
         GamificacionRepository(api = networkModule.securedApi)
+    }
+
+    val blogRepository: cl.duoc.levelupgamer.model.repository.BlogRepository by lazy {
+        cl.duoc.levelupgamer.model.repository.BlogRepository(api = networkModule.authApi)
     }
 
     companion object {

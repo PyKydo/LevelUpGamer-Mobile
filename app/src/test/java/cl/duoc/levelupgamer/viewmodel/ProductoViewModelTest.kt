@@ -43,7 +43,7 @@ class ProductoViewModelTest : StringSpec({
 
             val viewModel = ProductoViewModel(productoRepository)
 
-            val productosState = withTimeoutOrNull(2000) { // Timeout de 2 segundos
+            val productosState = withTimeoutOrNull(2000) { 
                 viewModel.productos.first { it.isNotEmpty() }
             }
 

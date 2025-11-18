@@ -91,7 +91,7 @@ class UsuarioRepositoryTest : StringSpec({
 
     "al actualizar el perfil, debe llamar a la secureApi y persistir la sesion" {
         runTest {
-            // 1. Preparación
+
             val originalEmail = "antiguo@test.com"
             val originalUserDto = UsuarioRespuestaDto(
                 id = 1,
@@ -105,7 +105,7 @@ class UsuarioRepositoryTest : StringSpec({
             coEvery { mockAuthApi.login(any()) } returns loginResponse
             repository.iniciarSesion(originalEmail, "password")
 
-            // 2. Preparación
+
             val updatedUserDto = UsuarioRespuestaDto(
                 id = 1,
                 run = "11.111.111-1",
@@ -116,18 +116,18 @@ class UsuarioRepositoryTest : StringSpec({
             )
             coEvery { mockSecureApi.updateUser(any(), any()) } returns updatedUserDto
 
-            // 3. Acción
+
             repository.actualizarPerfil("Nuevo", "nuevo@test.com")
 
-            // 4. Verificación
+
             coVerify(exactly = 1) { mockSecureApi.updateUser(originalUserDto.id, any()) }
-            coVerify(atLeast = 1) { mockTokenStore.persistSession(any()) } // Se llama en login y en update
+            coVerify(atLeast = 1) { mockTokenStore.persistSession(any()) }
         }
     }
 
     "al cambiar la contraseña, debe llamar a la secureApi" {
         runTest {
-            // 1. Preparación
+
             val email = "test@test.com"
             val userDto = UsuarioRespuestaDto(
                 id = 1,
@@ -141,13 +141,13 @@ class UsuarioRepositoryTest : StringSpec({
             coEvery { mockAuthApi.login(any()) } returns loginResponse
             repository.iniciarSesion(email, "password")
 
-            // 2. Preparación
+
             coEvery { mockSecureApi.changePassword(any()) } returns Unit
 
-            // 3. Acción
+
             repository.changePassword("pass-vieja", "pass-nueva")
 
-            // 4. Verificación
+
             coVerify(exactly = 1) { mockSecureApi.changePassword(any()) }
         }
     }
