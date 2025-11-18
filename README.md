@@ -1,50 +1,50 @@
-# LevelUpGamer - Aplicación Móvil
+# LevelUpGamer - App (versión simple)
 
-Aplicación Android (Jetpack Compose + MVVM) para la tienda LevelUpGamer. El cliente móvil consume el backend REST oficial: maneja autenticación JWT, sincroniza catálogo/carrito, envía pedidos reales y refleja el balance de puntos de fidelización del usuario.
+Esto es una app Android hecha con Jetpack Compose. Es un cliente para la tienda LevelUpGamer.
 
-## Funcionalidades Clave
+Funciona con el backend que tenemos y guarda cosas en local cuando hace falta.
 
-- **Autenticación segura:** Registro, login y refresco de tokens con almacenamiento cifrado (`EncryptedSharedPreferences`). La sesión se restaura automáticamente al abrir la app.
-- **Catálogo sincronizado:** Productos y detalles se obtienen desde `/api/products` y se cachean en Room para navegación offline básica.
-- **Carrito en línea + checkout:** Cada operación (agregar, actualizar, eliminar) impacta el carrito del backend. El botón *Finalizar compra* crea un pedido vía `/api/orders`, limpia el carrito y dispara la notificación local.
-- **Perfil y puntos:** El perfil usa `/api/users/{id}` y muestra los puntos acumulados. Tras cada compra la app fuerza `refreshPerfil()` para reflejar los nuevos puntos.
-- **Notificaciones y experiencia Compose:** UI Material 3, navegación declarativa y notificación local cuando un pedido se confirma.
+## Qué hace
+- Login y registro (tokens guardados de forma segura).
+- Muestra productos (los baja del backend y los guarda en Room).
+- Carrito local: puedes agregar, cambiar cantidad y borrar, todo se guarda en la app.
+- Hacer checkout crea un pedido en el backend y limpia el carrito.
+- Muestra puntos del usuario y una notificación cuando el pedido queda listo.
 
-## Configuración del Backend
+## Cosas técnicas 
+- UI: Jetpack Compose + ViewModel.
+- Red: Retrofit + OkHttp.
+- Almacenamiento: Room (productos + carrito).
+- Inyección simple: `ServiceLocator`.
 
-La app lee la URL base desde `BuildConfig.API_BASE_URL`. Por defecto apunta a `http://98.89.104.110:8081/` (localhost expuesto al emulador). Puedes sobrescribirla añadiendo a `local.properties` o ejecutando Gradle con la propiedad `LEVELUP_API_URL`:
+## Cómo correr
+1. Clona el repo:
+
+```bash
+git clone https://github.com/PyKydo/LevelUpGamer-Mobile.git
+```
+
+2. Abre el proyecto en Android Studio y sincroniza Gradle.
+3. Si tu backend no está en la URL por defecto, pon la tuya en `local.properties` como:
 
 ```properties
 LEVELUP_API_URL=https://mi-backend.example.com/
 ```
 
-> Incluye la barra final y asegúrate de que el backend exponga los endpoints descritos en `docs/Documentación del Backend.md`.
+4. Ejecuta en un emulador o dispositivo (Android 8+).
 
-## Ejecución
-
-1. **Clonar:**
-
-   ```bash
-   git clone https://github.com/PyKydo/LevelUpGamer-Mobile.git
-   ```
-
-2. **Abrir en Android Studio** (Hedgehog o superior) y sincronizar Gradle.
-3. **Configurar la URL** si no usarás `98.89.104.110`.
-4. **Ejecutar la app** en un emulador/dispositivo (Android 8.0+). El primer arranque descargará dependencias desde Maven Central.
-
-## Testing
-
-Ejecuta las pruebas unitarias (Kotest + JUnit5 + MockK) desde el proyecto raíz:
+## Tests (si quieres)
+Para pruebas unitarias en la compu:
 
 ```bash
-./gradlew test        # macOS/Linux
-.\gradlew.bat test    # Windows
+./gradlew test
 ```
 
-> La primera ejecución puede tardar por la descarga de `retrofit:2.11.0` y otras dependencias. Si falla por timeout vuelve a lanzar el comando.
+## Notas y cosas por mejorar (lista rápida)
+- El carrito ahora es local por defecto (mejor para cuando el backend falla).
+- La UI es simple; hay pantallas que se pueden pulir más (colores, espaciado).
 
-## Integrantes
-
-- Matías Gutiérrez
-- Víctor Mena
-- David Larenas
+## Equipo
+- Matías
+- Víctor
+- David

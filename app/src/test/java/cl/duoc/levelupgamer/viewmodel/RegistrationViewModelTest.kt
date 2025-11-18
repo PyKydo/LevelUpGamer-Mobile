@@ -102,7 +102,7 @@ class RegistrationViewModelTest : StringSpec({
             viewModel.onChangeApellidos("Apellido")
             viewModel.onChangeRun("11.111.111-1")
             viewModel.onChangeEmail("test@test.com")
-            viewModel.onChangeContrasena("corta") // Contraseña inválida
+            viewModel.onChangeContrasena("corta") 
             viewModel.onChangeContrasenaConfirm("corta")
             viewModel.onChangeFechaNacimiento("01/01/2000")
             viewModel.onChangeRegion("Metropolitana")

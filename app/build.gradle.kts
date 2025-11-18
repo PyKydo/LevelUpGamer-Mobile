@@ -27,11 +27,13 @@ android {
             ?.takeIf { it.isNotBlank() }
 
         val apiBaseUrl: String = configuredUrl
-            ?: host?.let { h ->
-                val p = port?.let { ":$it" } ?: ""
+            ?: host?.let { rawHost ->
+                val h = rawHost.trim().trimEnd('/')
+                val p = port?.let { ":${it.trim()}" } ?: ""
                 val hasScheme = h.startsWith("http://") || h.startsWith("https://")
-                val scheme = if (hasScheme) "" else "https://"
-                "$scheme$h$p/"
+                val scheme = if (hasScheme) "" else "http://"
+                val base = if (hasScheme) "${h}${p}/" else "${scheme}${h}${p}/"
+                base
             }
             ?: "http://98.89.104.110:8081/"
 
@@ -80,6 +82,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
 
+    implementation("org.commonmark:commonmark:0.21.0")
+
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.datastore.preferences)
@@ -91,14 +95,14 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
-    // Configuración de Pruebas Unitarias Unificada (Kotest + MockK + Truth)
+
     testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
     testImplementation("com.google.truth:truth:1.1.3")
     testImplementation("io.mockk:mockk:1.13.10")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 
-    // Dependencias de Android Testing (UI)
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

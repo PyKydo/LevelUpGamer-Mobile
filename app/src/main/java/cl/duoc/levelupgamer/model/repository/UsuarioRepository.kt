@@ -1,5 +1,6 @@
 package cl.duoc.levelupgamer.model.repository
 
+
 import cl.duoc.levelupgamer.data.remote.api.LevelUpApi
 import cl.duoc.levelupgamer.data.remote.dto.auth.ChangePasswordRequest
 import cl.duoc.levelupgamer.data.remote.dto.auth.LoginRequest
@@ -103,7 +104,7 @@ class UsuarioRepository(
         val userId = response.usuarioId
             ?: throw IllegalStateException("El backend no envió información del usuario.")
 
-        // Persist the tokens before hitting secured endpoints so the interceptor can attach them.
+
         val provisionalSession = TokenSession(
             accessToken = accessToken,
             refreshToken = refreshToken,
@@ -191,10 +192,13 @@ class UsuarioRepository(
             val user = withContext(ioDispatcher) { secureApi.getUser(userId).toDomain() }
             _usuarioActual.value = user
         } catch (_: Exception) {
-            // If we fail to fetch the user (network/server down, etc.) do NOT clear
-            // the persisted session here — keep tokens so the user stays logged in
-            // locally until they explicitly log out or the authenticator decides
-            // the tokens are invalid (then it will clear them).
+
+
+            try {
+                tokenStore.clear()
+            } catch (_: Exception) {
+
+            }
             _usuarioActual.value = null
         }
     }

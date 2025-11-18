@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import cl.duoc.levelupgamer.util.NetworkErrorMapper
 
 class CarritoViewModel(
     private val repo: CarritoRepository,
@@ -22,7 +23,6 @@ class CarritoViewModel(
     private val usuarioId: Long
 ) : ViewModel() {
 
-    private val _isSyncing = MutableStateFlow(false)
     private val _error = MutableStateFlow<String?>(null)
     private val _checkoutState = MutableStateFlow(CheckoutUiState())
 
@@ -33,23 +33,8 @@ class CarritoViewModel(
             initialValue = emptyList()
         )
 
-    val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
     val error: StateFlow<String?> = _error.asStateFlow()
     val checkoutState: StateFlow<CheckoutUiState> = _checkoutState.asStateFlow()
-
-    init {
-        sincronizar()
-    }
-
-    fun sincronizar() {
-        viewModelScope.launch {
-            _isSyncing.value = true
-            _error.value = null
-            runCatching { repo.sincronizar(usuarioId) }
-                .onFailure { t -> _error.value = t.message }
-            _isSyncing.value = false
-        }
-    }
 
     fun agregar(productoId: Long, cantidad: Int = 1) = launchCartOperation {
         repo.agregar(usuarioId, productoId, cantidad)
@@ -70,8 +55,10 @@ class CarritoViewModel(
             if (_checkoutState.value.isProcessing) return@launch
             _checkoutState.value = CheckoutUiState(isProcessing = true)
             runCatching {
+                val currentItems = items.value
                 val pedido = pedidoRepository.crearPedido(
                     userId = usuarioId,
+                    items = currentItems,
                     direccionEnvio = direccion.trim(),
                     notas = notas?.takeIf { it.isNotBlank() }
                 )
@@ -82,7 +69,7 @@ class CarritoViewModel(
                 _checkoutState.value = CheckoutUiState(pedidoConfirmado = pedido)
             }.onFailure { throwable ->
                 _checkoutState.value = CheckoutUiState(
-                    error = throwable.message ?: "No se pudo completar la compra"
+                    error = cl.duoc.levelupgamer.util.NetworkErrorMapper.map(throwable)
                 )
             }
         }
@@ -98,7 +85,7 @@ class CarritoViewModel(
             try {
                 block()
             } catch (t: Throwable) {
-                _error.value = t.message ?: "No se pudo actualizar el carrito"
+                _error.value = NetworkErrorMapper.map(t)
             }
         }
     }

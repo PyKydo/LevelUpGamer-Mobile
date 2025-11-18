@@ -59,13 +59,13 @@ fun RegistrationScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTermsDialog by remember { mutableStateOf(false) }
-    var showAddressDialog by remember { mutableStateOf(false) } // Estado para el diálogo de dirección
+    var showAddressDialog by remember { mutableStateOf(false) }
 
     val datePickerState = rememberDatePickerState(
         initialDisplayMode = DisplayMode.Input
     )
 
-    // Lógica para el diálogo de Términos y Condiciones
+
     if (showTermsDialog) {
         AlertDialog(
             onDismissRequest = { showTermsDialog = false },
@@ -75,7 +75,7 @@ fun RegistrationScreen(
         )
     }
 
-    // Lógica para el DatePickerDialog
+
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -97,7 +97,7 @@ fun RegistrationScreen(
         }
     }
 
-    // Lógica para el diálogo de Dirección
+
     if (showAddressDialog) {
         AlertDialog(
             onDismissRequest = { showAddressDialog = false },
@@ -152,7 +152,7 @@ fun RegistrationScreen(
             Text(text = "Registro", style = MaterialTheme.typography.headlineLarge)
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campos de texto...
+
             OutlinedTextField(
                 value = form.nombre,
                 onValueChange = vm::onChangeNombre,
@@ -189,7 +189,7 @@ fun RegistrationScreen(
             OutlinedTextField(value = form.contrasenaConfirm, onValueChange = vm::onChangeContrasenaConfirm, label = { Text("Confirmar contraseña") }, visualTransformation = PasswordVisualTransformation(), isError = form.contrasenaConfirmError != null, supportingText = { form.contrasenaConfirmError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Campo de Fecha de Nacimiento
+
             Box(modifier = Modifier.clickable { showDatePicker = true }) {
                 OutlinedTextField(
                     value = form.fechaNacimiento,
@@ -203,7 +203,7 @@ fun RegistrationScreen(
             }
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Nuevo campo para abrir el diálogo de dirección
+
             val direccionMostrada = listOf(form.direccion, form.comuna, form.region).filter { it.isNotBlank() }.joinToString(", ")
             Box(modifier = Modifier.clickable { showAddressDialog = true }) {
                 OutlinedTextField(
@@ -229,7 +229,7 @@ fun RegistrationScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Checkbox de Términos y Condiciones
+
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Checkbox(checked = form.aceptaTerminos, onCheckedChange = vm::onChangeAceptaTerminos)
                 Text(text = "Acepto los ")
@@ -245,14 +245,14 @@ fun RegistrationScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón de Registrarse
+
             Button(onClick = vm::registrar, enabled = !form.isLoading, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary), modifier = Modifier.fillMaxWidth()) {
                 Text("Registrarse", color = MaterialTheme.colorScheme.onSecondary)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Enlace para ir a Iniciar Sesión
+
             Row {
                 Text("¿Ya tienes una cuenta? ")
                 Text(
@@ -264,7 +264,7 @@ fun RegistrationScreen(
                 )
             }
 
-            // Efectos para mostrar Snackbar y navegar
+
             LaunchedEffect(form.isSuccess) {
                 if (form.isSuccess) {
                     onRegistered()

@@ -1,6 +1,7 @@
 package cl.duoc.levelupgamer.ui
 
 import androidx.compose.foundation.Image
+import coil.compose.AsyncImage
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import cl.duoc.levelupgamer.BuildConfig
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -87,14 +89,31 @@ fun ProductDetailScreen(
                 .padding(it)
                 .verticalScroll(rememberScrollState())
         ) {
-            Image(
-                painter = painterResource(id = imageResId),
-                contentDescription = producto.nombre,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp),
-                contentScale = ContentScale.Crop
-            )
+            val explicitUrl = producto.imageUrl.trim()
+            if (explicitUrl.startsWith("http", ignoreCase = true) || explicitUrl.startsWith("/")) {
+                val model = if (explicitUrl.startsWith("/")) {
+                    BuildConfig.API_BASE_URL.trimEnd('/') + explicitUrl
+                } else explicitUrl
+                AsyncImage(
+                    model = model,
+                    contentDescription = producto.nombre,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp),
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(id = imageResId),
+                    error = painterResource(id = imageResId)
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = imageResId),
+                    contentDescription = producto.nombre,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
             Column(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)

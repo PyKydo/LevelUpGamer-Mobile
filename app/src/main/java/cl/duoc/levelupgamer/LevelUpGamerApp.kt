@@ -18,7 +18,7 @@ class LevelUpGamerApp : Application() {
     }
 
     private fun crearCanalDeNotificaciones() {
-        // Los canales de notificación solo son necesarios a partir de Android 8.0 (API 26)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val nombre = "Compras"
             val descripcion = "Notificaciones sobre el estado de tus compras"
@@ -28,7 +28,7 @@ class LevelUpGamerApp : Application() {
                 description = descripcion
             }
 
-            // Registrar el canal en el sistema
+
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(canal)
         }

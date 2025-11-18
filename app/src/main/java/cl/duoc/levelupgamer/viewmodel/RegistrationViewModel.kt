@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import cl.duoc.levelupgamer.util.NetworkErrorMapper
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
@@ -158,7 +159,7 @@ class RegistrationViewModel(private val authRepository: InAuthRepository) : View
             firstError = firstError ?: msg
         }
 
-        // Validación de confirmación de contraseña
+
         if (contrasenaConfirm.isBlank()) {
             hasError = true
             val msg = "Debes confirmar la contraseña"
@@ -241,7 +242,8 @@ class RegistrationViewModel(private val authRepository: InAuthRepository) : View
             )
             _form.update { it.copy(isLoading = false, isSuccess = true) }
         } catch (t: Throwable) {
-            _form.update { it.copy(isLoading = false, error = t.message ?: "Error inesperado al registrar") }
+            val msg = NetworkErrorMapper.map(t)
+            _form.update { it.copy(isLoading = false, error = msg) }
         }
     }
 
@@ -289,7 +291,7 @@ class RegistrationViewModel(private val authRepository: InAuthRepository) : View
     }
 
     private fun validarContrasena(contrasena: String): Boolean {
-        val pattern = Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$") // al menos debe tener 8 caracteres, 1 minúscula, 1 mayúscula, 1 dígito y 1 símbolo
+        val pattern = Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$")
         return pattern.matcher(contrasena).matches()
     }
 }

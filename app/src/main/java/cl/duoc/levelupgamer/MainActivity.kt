@@ -20,6 +20,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val usuarioRepository = serviceLocator.usuarioRepository
         val productoRepository = serviceLocator.productoRepository
+        val blogRepository = serviceLocator.blogRepository
         val carritoRepository = serviceLocator.carritoRepository
         val pedidoRepository = serviceLocator.pedidoRepository
 
@@ -30,7 +31,8 @@ class MainActivity : ComponentActivity() {
                     productosVm = productosVm,
                     usuarioRepository = usuarioRepository,
                     carritoRepository = carritoRepository,
-                    pedidoRepository = pedidoRepository
+                    pedidoRepository = pedidoRepository,
+                    blogRepository = blogRepository
                 )
             }
         }
