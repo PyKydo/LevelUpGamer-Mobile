@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import cl.duoc.levelupgamer.model.Producto
+import cl.duoc.levelupgamer.util.formatCurrency
 
 @Composable
 fun CartItemCard(
@@ -50,6 +51,8 @@ fun CartItemCard(
         resolveProductImageResId(context, producto)
     }
     val subtotal = producto.precio * quantity
+    val unitPriceLabel = remember(producto.precio) { formatCurrency(producto.precio) }
+    val subtotalLabel = remember(subtotal) { formatCurrency(subtotal) }
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -60,7 +63,7 @@ fun CartItemCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.Top
         ) {
             val explicitUrl = producto.imageUrl.trim()
@@ -72,7 +75,7 @@ fun CartItemCard(
                     model = model,
                     contentDescription = producto.nombre,
                     modifier = Modifier
-                        .size(72.dp)
+                        .size(64.dp)
                         .clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Crop,
                     placeholder = painterResource(id = imageResId),
@@ -83,7 +86,7 @@ fun CartItemCard(
                     painter = painterResource(id = imageResId),
                     contentDescription = producto.nombre,
                     modifier = Modifier
-                        .size(72.dp)
+                        .size(64.dp)
                         .clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Crop
                 )
@@ -119,7 +122,7 @@ fun CartItemCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "$${String.format("%.2f", producto.precio)}",
+                            text = unitPriceLabel,
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -130,10 +133,12 @@ fun CartItemCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "$${String.format("%.2f", subtotal)}",
-                            style = MaterialTheme.typography.titleLarge,
+                            text = subtotalLabel,
+                            style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -195,10 +200,5 @@ private fun QuantityControls(
                 Text("+", fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
         }
-        Text(
-            text = "x$quantity",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }

@@ -94,14 +94,14 @@ fun LevelUpNavHost(
     Scaffold(
         bottomBar = {
 
-            val show = currentRoute == AppScreen.Catalog.route || currentRoute == AppScreen.Home.route || currentRoute == AppScreen.Blogs.route || currentRoute == AppScreen.Cart.route
+            // Do not show bottom navigation on the Cart screen
+            val show = currentRoute == AppScreen.Catalog.route || currentRoute == AppScreen.Home.route || currentRoute == AppScreen.Blogs.route
             if (show) {
                 NavigationBar {
                     val items = listOf(
                         AppScreen.Catalog to Pair(Icons.Default.List, "Catálogo"),
                         AppScreen.Home to Pair(Icons.Default.Home, "Home"),
-                        AppScreen.Blogs to Pair(Icons.Default.List, "Blogs"),
-                        AppScreen.Cart to Pair(Icons.Default.ShoppingCart, "Carrito")
+                        AppScreen.Blogs to Pair(Icons.Default.List, "Blogs")
                     )
                     items.forEach { (screen, iconAndLabel) ->
                         NavigationBarItem(

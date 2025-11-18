@@ -27,10 +27,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cl.duoc.levelupgamer.model.Producto
 import cl.duoc.levelupgamer.ui.resolveProductImageResId
+import cl.duoc.levelupgamer.util.formatCurrency
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductCard(producto: Producto, onClick: () -> Unit) {
+    val formattedPrice = remember(producto.precio) { formatCurrency(producto.precio) }
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -84,9 +86,10 @@ fun ProductCard(producto: Producto, onClick: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "$${producto.precio}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    text = formattedPrice,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
