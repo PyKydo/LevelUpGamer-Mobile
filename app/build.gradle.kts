@@ -1,3 +1,5 @@
+import kotlinx.kover.gradle.plugin.dsl.AggregationType
+import kotlinx.kover.gradle.plugin.dsl.MetricType
 import org.gradle.api.Project
 
 val defaultRemoteApiUrl = "http://98.89.104.110:8081/"
@@ -14,11 +16,19 @@ fun Project.backendUrl(propertyName: String, fallback: String): String {
     return normalizeBaseUrl(propertyValue, fallback)
 }
 
+val coverageTargets = listOf(
+    "cl.duoc.levelupgamer.model.repository.CarritoRepository*",
+    "cl.duoc.levelupgamer.model.repository.PedidoRepository*",
+    "cl.duoc.levelupgamer.model.repository.ProductoRepository*",
+    "cl.duoc.levelupgamer.data.remote.mapper.*"
+)
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("org.jetbrains.kotlin.kapt")
+    id("org.jetbrains.kotlinx.kover")
 }
 
 android {
@@ -127,4 +137,25 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+koverReport {
+    filters {
+        includes {
+            classes(*coverageTargets.toTypedArray())
+        }
+    }
+    defaults {
+        mergeWith("localDebug")
+        verify {
+            onCheck = true
+            rule("Core repositories must keep 95% line coverage") {
+                bound {
+                    minValue = 95
+                    metric = MetricType.LINE
+                    aggregation = AggregationType.COVERED_PERCENTAGE
+                }
+            }
+        }
+    }
 }
