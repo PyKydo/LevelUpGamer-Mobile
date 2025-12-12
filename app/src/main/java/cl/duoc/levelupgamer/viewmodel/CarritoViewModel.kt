@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import cl.duoc.levelupgamer.util.NetworkErrorMapper
+import java.io.IOException
 
 class CarritoViewModel(
     private val repo: CarritoRepository,
@@ -25,6 +26,7 @@ class CarritoViewModel(
 
     private val _error = MutableStateFlow<String?>(null)
     private val _checkoutState = MutableStateFlow(CheckoutUiState())
+    private val _readOnly = MutableStateFlow(false)
 
     val items: StateFlow<List<CarritoItemEntity>> =
         repo.observarCarrito(usuarioId).stateIn(
@@ -35,6 +37,11 @@ class CarritoViewModel(
 
     val error: StateFlow<String?> = _error.asStateFlow()
     val checkoutState: StateFlow<CheckoutUiState> = _checkoutState.asStateFlow()
+    val readOnly: StateFlow<Boolean> = _readOnly.asStateFlow()
+
+    init {
+        sincronizarCarrito(silencioso = true)
+    }
 
     fun agregar(productoId: Long, cantidad: Int = 1) = launchCartOperation {
         repo.agregar(usuarioId, productoId, cantidad)
@@ -50,7 +57,10 @@ class CarritoViewModel(
 
     fun limpiar() = launchCartOperation { repo.limpiarCarrito(usuarioId) }
 
-    fun realizarCheckout(direccion: String, notas: String?) {
+    fun sincronizarCarrito(silencioso: Boolean = false) =
+        launchCartOperation(showError = !silencioso) { repo.sincronizarCarrito(usuarioId) }
+
+    fun realizarCheckout(total: Double, direccion: String, notas: String?) {
         viewModelScope.launch {
             if (_checkoutState.value.isProcessing) return@launch
             _checkoutState.value = CheckoutUiState(isProcessing = true)
@@ -60,7 +70,8 @@ class CarritoViewModel(
                     userId = usuarioId,
                     items = currentItems,
                     direccionEnvio = direccion.trim(),
-                    notas = notas?.takeIf { it.isNotBlank() }
+                    notas = notas?.takeIf { it.isNotBlank() },
+                    total = total
                 )
                 repo.limpiarCarrito(usuarioId)
                 pedido
@@ -79,13 +90,21 @@ class CarritoViewModel(
         _checkoutState.value = CheckoutUiState()
     }
 
-    private fun launchCartOperation(block: suspend () -> Unit) {
+    private fun launchCartOperation(showError: Boolean = true, block: suspend () -> Unit) {
         viewModelScope.launch {
-            _error.value = null
+            if (showError) {
+                _error.value = null
+            }
             try {
                 block()
+                _readOnly.value = false
             } catch (t: Throwable) {
-                _error.value = NetworkErrorMapper.map(t)
+                if (showError) {
+                    _error.value = NetworkErrorMapper.map(t)
+                }
+                if (t is IOException) {
+                    _readOnly.value = true
+                }
             }
         }
     }

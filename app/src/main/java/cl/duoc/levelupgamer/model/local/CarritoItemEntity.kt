@@ -9,5 +9,11 @@ data class CarritoItemEntity(
     val usuarioId: Long,
     val productoId: Long,
     val cantidad: Int,
-    val unitPrice: Double = 0.0
+    val unitPrice: Double = 0.0,
+    val nombre: String = "",
+    val descripcion: String = "",
+    val codigo: String = "",
+    val imageUrl: String = "",
+    val categoria: String = "",
+    val gallery: List<String> = emptyList()
 )

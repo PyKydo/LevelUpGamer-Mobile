@@ -41,13 +41,16 @@ class ServiceLocator private constructor(context: Context) {
     val productoRepository: ProductoRepository by lazy {
         ProductoRepository(
             dao = databaseInternal.productoDao(),
-            api = networkModule.securedApi
+            securedApi = networkModule.securedApi,
+            publicApi = networkModule.authApi
         )
     }
 
     val carritoRepository: CarritoRepository by lazy {
         CarritoRepository(
-            dao = databaseInternal.carritoItemDao()
+            dao = databaseInternal.carritoItemDao(),
+            productoDao = databaseInternal.productoDao(),
+            api = networkModule.securedApi
         )
     }
 

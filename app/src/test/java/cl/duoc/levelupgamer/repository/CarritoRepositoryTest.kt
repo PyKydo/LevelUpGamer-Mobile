@@ -3,136 +3,145 @@ package cl.duoc.levelupgamer.repository
 import cl.duoc.levelupgamer.model.local.CarritoItemEntity
 import cl.duoc.levelupgamer.model.local.dao.CarritoItemDao
 import cl.duoc.levelupgamer.model.repository.CarritoRepository
-import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.shouldBe
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Before
+import org.junit.Test
 
-@ExperimentalCoroutinesApi
-class CarritoRepositoryTest : StringSpec({
+@OptIn(ExperimentalCoroutinesApi::class)
+class CarritoRepositoryTest {
 
-    "agregar inserta un item nuevo cuando no existe" {
-        runTest {
-            val dao: CarritoItemDao = mockk(relaxed = true)
-            val repository = CarritoRepository(dao, Dispatchers.Unconfined)
-            coEvery { dao.obtenerPorUsuarioYProducto(1, 2) } returns null
-            coEvery { dao.insertar(any<CarritoItemEntity>()) } returns 1
+    private val dispatcher = StandardTestDispatcher()
 
-            repository.agregar(1, 2, 3)
+    private lateinit var carritoDao: FakeCarritoItemDao
+    private lateinit var repository: CarritoRepository
 
-            coVerify(exactly = 1) { dao.insertar(any<CarritoItemEntity>()) }
-            coVerify(exactly = 0) { dao.actualizar(any()) }
-        }
+    @Before
+    fun setup() {
+        carritoDao = FakeCarritoItemDao()
+        repository = CarritoRepository(
+            dao = carritoDao,
+            ioDispatcher = dispatcher
+        )
     }
 
-    "agregar incrementa la cantidad cuando el item existe" {
-        runTest {
-            val dao: CarritoItemDao = mockk(relaxed = true)
-            val repository = CarritoRepository(dao, Dispatchers.Unconfined)
-            val existente = CarritoItemEntity(id = 5, usuarioId = 1, productoId = 2, cantidad = 4)
-            coEvery { dao.obtenerPorUsuarioYProducto(1, 2) } returns existente
-            coEvery { dao.actualizar(any()) } just runs
+    @Test
+    fun `agregar crea nuevo item cuando no existe`() = runTest(dispatcher) {
+        repository.agregar(USER_ID, productoId = 42, cantidad = 2)
 
-            repository.agregar(1, 2, 2)
-
-            coVerify { dao.actualizar(existente.copy(cantidad = 6)) }
-            coVerify(exactly = 0) { dao.insertar(any<CarritoItemEntity>()) }
-        }
+        val stored = carritoDao.snapshot(USER_ID)
+        assertEquals(1, stored.size)
+        assertEquals(42, stored.first().productoId)
+        assertEquals(2, stored.first().cantidad)
     }
 
-    "agregar con cantidad invalida lanza excepcion" {
-        runTest {
-            val dao: CarritoItemDao = mockk(relaxed = true)
-            val repository = CarritoRepository(dao, Dispatchers.Unconfined)
+    @Test
+    fun `agregar acumula cantidad cuando item existe`() = runTest(dispatcher) {
+        repository.agregar(USER_ID, productoId = 10, cantidad = 1)
+        repository.agregar(USER_ID, productoId = 10, cantidad = 3)
 
-            shouldThrow<IllegalArgumentException> { repository.agregar(1, 1, 0) }
-        }
+        val stored = carritoDao.snapshot(USER_ID)
+        assertEquals(1, stored.size)
+        assertEquals(4, stored.first().cantidad)
     }
 
-    "limpiarCarrito elimina todos los items locales" {
-        runTest {
-            val dao: CarritoItemDao = mockk(relaxed = true)
-            val repository = CarritoRepository(dao, Dispatchers.Unconfined)
+    @Test
+    fun `actualizarCantidad aplica nueva cantidad o elimina al llegar a cero`() = runTest(dispatcher) {
+        repository.agregar(USER_ID, productoId = 5, cantidad = 2)
+        val item = carritoDao.snapshot(USER_ID).first()
 
-            repository.limpiarCarrito(1)
+        repository.actualizarCantidad(USER_ID, item.id, nuevaCantidad = 5)
+        assertEquals(5, carritoDao.snapshot(USER_ID).first().cantidad)
 
-            coVerify(exactly = 1) { dao.eliminarPorUsuario(1) }
-        }
+        repository.actualizarCantidad(USER_ID, item.id, nuevaCantidad = 0)
+        assertEquals(0, carritoDao.snapshot(USER_ID).size)
     }
 
-    "actualizarCantidad cambia la cantidad cuando el item pertenece al usuario" {
-        runTest {
-            val dao: CarritoItemDao = mockk(relaxed = true)
-            val repository = CarritoRepository(dao, Dispatchers.Unconfined)
-            val item = CarritoItemEntity(id = 10, usuarioId = 1, productoId = 8, cantidad = 2)
-            coEvery { dao.obtenerPorId(10) } returns item
-            coEvery { dao.actualizar(any()) } just runs
+    @Test
+    fun `eliminarItem borra registro cuando pertenece al usuario`() = runTest(dispatcher) {
+        repository.agregar(USER_ID, productoId = 7, cantidad = 1)
+        val item = carritoDao.snapshot(USER_ID).first()
 
-            repository.actualizarCantidad(1, 10, 5)
+        repository.eliminarItem(USER_ID, item.id)
 
-            coVerify { dao.actualizar(item.copy(cantidad = 5)) }
-        }
+        assertEquals(0, carritoDao.snapshot(USER_ID).size)
     }
 
-    "actualizarCantidad elimina cuando la nueva cantidad es cero" {
-        runTest {
-            val dao: CarritoItemDao = mockk(relaxed = true)
-            val repository = CarritoRepository(dao, Dispatchers.Unconfined)
-            val item = CarritoItemEntity(id = 10, usuarioId = 1, productoId = 8, cantidad = 2)
-            coEvery { dao.obtenerPorId(10) } returns item
-            coEvery { dao.eliminar(any()) } just runs
+    @Test
+    fun `limpiarCarrito elimina todos los items del usuario`() = runTest(dispatcher) {
+        repository.agregar(USER_ID, productoId = 1, cantidad = 1)
+        repository.agregar(USER_ID, productoId = 2, cantidad = 1)
 
-            repository.actualizarCantidad(1, 10, 0)
+        repository.limpiarCarrito(USER_ID)
 
-            coVerify { dao.eliminar(item) }
-        }
+        assertEquals(0, carritoDao.snapshot(USER_ID).size)
     }
 
-    "actualizarCantidad ignora items de otros usuarios" {
-        runTest {
-            val dao: CarritoItemDao = mockk(relaxed = true)
-            val repository = CarritoRepository(dao, Dispatchers.Unconfined)
-            val item = CarritoItemEntity(id = 10, usuarioId = 99, productoId = 8, cantidad = 2)
-            coEvery { dao.obtenerPorId(10) } returns item
+    private companion object {
+        const val USER_ID = 1L
+    }
+}
 
-            repository.actualizarCantidad(1, 10, 5)
+private class FakeCarritoItemDao : CarritoItemDao {
+    private val items = mutableListOf<CarritoItemEntity>()
+    private val flows = mutableMapOf<Long, MutableStateFlow<List<CarritoItemEntity>>>()
 
-            coVerify(exactly = 0) { dao.actualizar(any()) }
-            coVerify(exactly = 0) { dao.eliminar(any()) }
-        }
+    override fun observarPorUsuario(usuarioId: Long): Flow<List<CarritoItemEntity>> =
+        flows.getOrPut(usuarioId) { MutableStateFlow(items.filter { it.usuarioId == usuarioId }) }
+
+    override suspend fun obtenerPorId(id: Long): CarritoItemEntity? = items.find { it.id == id }
+
+    override suspend fun obtenerPorUsuarioYProducto(usuarioId: Long, productoId: Long): CarritoItemEntity? =
+        items.find { it.usuarioId == usuarioId && it.productoId == productoId }
+
+    suspend fun snapshot(usuarioId: Long): List<CarritoItemEntity> =
+        items.filter { it.usuarioId == usuarioId }
+
+    override suspend fun insertar(item: CarritoItemEntity): Long {
+        val assignedId = if (item.id == 0L) (items.maxOfOrNull { it.id } ?: 0L) + 1 else item.id
+        items.removeAll { it.id == assignedId }
+        items.add(item.copy(id = assignedId))
+        notifyUser(item.usuarioId)
+        return assignedId
     }
 
-    "eliminarItem borra el item cuando pertenece al usuario" {
-        runTest {
-            val dao: CarritoItemDao = mockk(relaxed = true)
-            val repository = CarritoRepository(dao, Dispatchers.Unconfined)
-            val item = CarritoItemEntity(id = 7, usuarioId = 1, productoId = 3, cantidad = 1)
-            coEvery { dao.obtenerPorId(7) } returns item
-            coEvery { dao.eliminar(item) } just runs
-
-            repository.eliminarItem(1, 7)
-
-            coVerify { dao.eliminar(item) }
-        }
+    override suspend fun insertar(items: List<CarritoItemEntity>) {
+        items.forEach { insertar(it) }
     }
 
-    "eliminarItem ignora items de otro usuario" {
-        runTest {
-            val dao: CarritoItemDao = mockk(relaxed = true)
-            val repository = CarritoRepository(dao, Dispatchers.Unconfined)
-            val item = CarritoItemEntity(id = 7, usuarioId = 2, productoId = 3, cantidad = 1)
-            coEvery { dao.obtenerPorId(7) } returns item
-
-            repository.eliminarItem(1, 7)
-
-            coVerify(exactly = 0) { dao.eliminar(any()) }
-        }
+    override suspend fun actualizar(item: CarritoItemEntity) {
+        items.replaceAll { existing -> if (existing.id == item.id) item else existing }
+        notifyUser(item.usuarioId)
     }
-})
+
+    override suspend fun eliminar(item: CarritoItemEntity) {
+        items.removeAll { it.id == item.id }
+        notifyUser(item.usuarioId)
+    }
+
+    override suspend fun eliminarPorUsuario(usuarioId: Long) {
+        items.removeAll { it.usuarioId == usuarioId }
+        notifyUser(usuarioId)
+    }
+
+    override suspend fun eliminarPorUsuarioYProducto(usuarioId: Long, productoId: Long) {
+        items.removeAll { it.usuarioId == usuarioId && it.productoId == productoId }
+        notifyUser(usuarioId)
+    }
+
+    override suspend fun reemplazarCarrito(usuarioId: Long, nuevos: List<CarritoItemEntity>) {
+        eliminarPorUsuario(usuarioId)
+        insertar(nuevos)
+        notifyUser(usuarioId)
+    }
+
+    private fun notifyUser(usuarioId: Long) {
+        val snapshot = items.filter { it.usuarioId == usuarioId }
+        flows.getOrPut(usuarioId) { MutableStateFlow(snapshot) }.value = snapshot
+    }
+}

@@ -1,3 +1,19 @@
+import org.gradle.api.Project
+
+val defaultRemoteApiUrl = "http://98.89.104.110:8081/"
+val defaultLocalApiUrl = "http://10.0.2.2:8081/"
+
+fun normalizeBaseUrl(raw: String?, fallback: String): String {
+    val resolved = raw?.trim()?.takeIf { it.isNotEmpty() } ?: fallback
+    return if (resolved.endsWith('/')) resolved else "$resolved/"
+}
+
+fun Project.backendUrl(propertyName: String, fallback: String): String {
+    val propertyValue = (findProperty(propertyName) as? String)
+        ?: providers.environmentVariable(propertyName).orNull
+    return normalizeBaseUrl(propertyValue, fallback)
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -17,27 +33,21 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
-        val configuredUrl: String? = (project.findProperty("LEVELUP_API_URL") as? String)
-            ?.takeIf { it.isNotBlank() }
+    }
 
-        val host: String? = (project.findProperty("LEVELUP_API_HOST") as? String)
-            ?.takeIf { it.isNotBlank() }
-        val port: String? = (project.findProperty("LEVELUP_API_PORT") as? String)
-            ?.takeIf { it.isNotBlank() }
+    val remoteBaseUrl = project.backendUrl("apiUrl", defaultRemoteApiUrl)
+    val localBaseUrl = project.backendUrl("localApiUrl", defaultLocalApiUrl)
 
-        val apiBaseUrl: String = configuredUrl
-            ?: host?.let { rawHost ->
-                val h = rawHost.trim().trimEnd('/')
-                val p = port?.let { ":${it.trim()}" } ?: ""
-                val hasScheme = h.startsWith("http://") || h.startsWith("https://")
-                val scheme = if (hasScheme) "" else "http://"
-                val base = if (hasScheme) "${h}${p}/" else "${scheme}${h}${p}/"
-                base
-            }
-            ?: "http://98.89.104.110:8081/"
-
-        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
+    flavorDimensions += "backend"
+    productFlavors {
+        create("remote") {
+            dimension = "backend"
+            buildConfigField("String", "API_BASE_URL", "\"$remoteBaseUrl\"")
+        }
+        create("local") {
+            dimension = "backend"
+            buildConfigField("String", "API_BASE_URL", "\"$localBaseUrl\"")
+        }
     }
 
     buildTypes {
@@ -60,8 +70,10 @@ android {
         compose = true
         buildConfig = true
     }
-    packagingOptions {
-        resources.excludes.add("/META-INF/{AL2.0,LGPL2.1}")
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
 }
 
@@ -74,7 +86,8 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.material3)
+    implementation("androidx.compose.material:material-icons-extended")
 
     implementation("io.coil-kt:coil-compose:2.5.0")
 
@@ -83,6 +96,7 @@ dependencies {
     kapt(libs.androidx.room.compiler)
 
     implementation("org.commonmark:commonmark:0.21.0")
+    implementation("org.commonmark:commonmark-ext-gfm-tables:0.21.0")
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

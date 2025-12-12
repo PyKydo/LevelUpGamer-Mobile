@@ -13,7 +13,13 @@ class PedidoRepository(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
 
-    suspend fun crearPedido(userId: Long, items: List<cl.duoc.levelupgamer.model.local.CarritoItemEntity>, direccionEnvio: String, notas: String?): Pedido =
+    suspend fun crearPedido(
+        userId: Long,
+        items: List<cl.duoc.levelupgamer.model.local.CarritoItemEntity>,
+        direccionEnvio: String,
+        notas: String?,
+        total: Double
+    ): Pedido =
         withContext(ioDispatcher) {
             val itemsDto = items.map { carritoItem ->
                 cl.duoc.levelupgamer.data.remote.dto.pedidos.PedidoProductoCrearDto(
@@ -26,24 +32,20 @@ class PedidoRepository(
                     usuarioId = userId,
                     items = itemsDto,
                     direccionEnvio = direccionEnvio,
-                    notas = notas
+                    notas = notas,
+                    total = total
                 )
             ).toDomain()
         }
 
-
-    suspend fun crearPedido(userId: Long, direccionEnvio: String, notas: String?): Pedido =
-        withContext(ioDispatcher) {
-
-            api.createOrder(
-                PedidoCrearDto(
-                    usuarioId = userId,
-                    items = emptyList(),
-                    direccionEnvio = direccionEnvio,
-                    notas = notas
-                )
-            ).toDomain()
-        }
+    suspend fun crearPedido(userId: Long, direccionEnvio: String, notas: String?, total: Double): Pedido =
+        crearPedido(
+            userId = userId,
+            items = emptyList(),
+            direccionEnvio = direccionEnvio,
+            notas = notas,
+            total = total
+        )
 
     suspend fun obtenerPedidos(userId: Long): List<Pedido> = withContext(ioDispatcher) {
         api.getOrdersForUser(userId).map { it.toDomain() }

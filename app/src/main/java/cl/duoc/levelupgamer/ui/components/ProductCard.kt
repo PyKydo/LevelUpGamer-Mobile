@@ -1,4 +1,4 @@
-package cl.duoc.levelupgamer.ui
+package cl.duoc.levelupgamer.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,11 +29,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cl.duoc.levelupgamer.BuildConfig
 import cl.duoc.levelupgamer.model.Producto
+import cl.duoc.levelupgamer.ui.resolveProductImageResId
 import cl.duoc.levelupgamer.util.formatCurrency
 import cl.duoc.levelupgamer.ui.theme.spacing
 import coil.compose.AsyncImage
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductCard(
     producto: Producto,
@@ -47,9 +46,12 @@ fun ProductCard(
     val imageResId = remember(producto.codigo, producto.imageUrl) {
         resolveProductImageResId(context, producto)
     }
+    val productBadge = rememberProductBadge(producto)
+    val productStatus = rememberProductStatus(producto)
+    val rating = rememberProductRating(producto)
+
     Card(
-        onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.scaleOnClick(onClick = onClick),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -80,8 +82,19 @@ fun ProductCard(
                     contentScale = ContentScale.Crop
                 )
             }
+            if (productBadge != null) {
+                ProductBadgeView(
+                    badge = productBadge,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(12.dp)
+                )
+            }
         }
-        Column(modifier = Modifier.padding(MaterialTheme.spacing.md.dp)) {
+        Column(
+            modifier = Modifier.padding(MaterialTheme.spacing.md.dp),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.xs.dp)
+        ) {
             Text(
                 text = producto.nombre,
                 style = MaterialTheme.typography.titleMedium,
@@ -89,6 +102,8 @@ fun ProductCard(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
+            RatingBar(rating = rating)
+            StatusChip(status = productStatus)
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.sm.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),

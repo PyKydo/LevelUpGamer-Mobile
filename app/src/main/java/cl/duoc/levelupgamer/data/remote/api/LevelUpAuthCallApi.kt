@@ -7,6 +7,6 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface LevelUpAuthCallApi {
-    @POST("api/auth/refresh")
+    @POST("api/v1/auth/refresh")
     fun refreshToken(@Body body: TokenRefreshRequest): Call<TokenRefreshResponse>
 }

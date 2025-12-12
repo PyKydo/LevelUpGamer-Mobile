@@ -27,82 +27,82 @@ import retrofit2.http.Query
 
 interface LevelUpApi {
 
-    @POST("api/auth/login")
+    @POST("api/v1/auth/login")
     suspend fun login(@Body body: LoginRequest): LoginResponse
 
-    @POST("api/auth/refresh")
+    @POST("api/v1/auth/refresh")
     suspend fun refreshToken(@Body body: TokenRefreshRequest): TokenRefreshResponse
 
-    @POST("api/auth/change-password")
+    @POST("api/v1/auth/change-password")
     suspend fun changePassword(@Body body: ChangePasswordRequest)
 
-    @POST("api/users/register")
+    @POST("api/v1/users/register")
     suspend fun register(@Body body: UsuarioRegistroDto): UsuarioRespuestaDto
 
-    @GET("api/users/{id}")
+    @GET("api/v1/users/{id}")
     suspend fun getUser(@Path("id") id: Long): UsuarioRespuestaDto
 
-    @PUT("api/users/{id}")
+    @PUT("api/v1/users/{id}")
     suspend fun updateUser(
         @Path("id") id: Long,
         @Body body: UsuarioUpdateDto
     ): UsuarioRespuestaDto
 
-    @GET("api/users/roles")
+    @GET("api/v1/users/roles")
     suspend fun getRoles(): RolesResponse
 
-    @GET("api/products")
+    @GET("api/v1/products")
     suspend fun getProducts(): List<ProductoDto>
 
-    @GET("api/products/{id}")
+    @GET("api/v1/products/{id}")
     suspend fun getProduct(@Path("id") id: Long): ProductoDto
 
-    @GET("api/carrito/{userId}")
+    @GET("api/v1/cart/{userId}")
     suspend fun getCart(@Path("userId") userId: Long): CarritoDto
 
-    @POST("api/carrito/{userId}/add")
+    @POST("api/v1/cart/{userId}/add")
     suspend fun addToCart(
         @Path("userId") userId: Long,
         @Query("productId") productId: Long,
         @Query("quantity") quantity: Int
     ): CarritoDto
 
-    @DELETE("api/carrito/{userId}/remove")
+    @DELETE("api/v1/cart/{userId}/remove")
     suspend fun removeFromCart(
         @Path("userId") userId: Long,
         @Query("productId") productId: Long
     ): CarritoDto
 
-    @DELETE("api/carrito/{userId}")
+    @DELETE("api/v1/cart/{userId}")
     suspend fun clearCart(@Path("userId") userId: Long)
 
-    @POST("api/orders")
+    @POST("api/v1/boletas")
     suspend fun createOrder(@Body body: PedidoCrearDto): PedidoRespuestaDto
 
-    @GET("api/orders/user/{userId}")
+    @GET("api/v1/boletas/user/{userId}")
     suspend fun getOrdersForUser(@Path("userId") userId: Long): List<PedidoRespuestaDto>
 
-    @GET("api/orders/{id}")
+    @GET("api/v1/boletas/{id}")
     suspend fun getOrder(@Path("id") orderId: Long): PedidoRespuestaDto
 
-    @GET("api/blog-posts")
+    @GET("api/v1/blog-posts")
     suspend fun getBlogPosts(): List<BlogDto>
 
-    @GET("api/blog-posts/{id}")
+    @GET("api/v1/blog-posts/{id}")
     suspend fun getBlogPost(@Path("id") id: Long): BlogDto
 
-    @GET("api/blog-posts/{id}/content")
+    @GET("api/v1/blog-posts/{id}/content")
     suspend fun getBlogContent(@Path("id") id: Long): ResponseBody
 
-    @POST("api/contact-messages")
+    @POST("api/v1/contact-messages")
     suspend fun sendContactMessage(@Body body: ContactoDto): ContactoDto
 
-    @GET("api/points/{userId}")
+    @GET("api/v1/points/{userId}")
     suspend fun getPoints(@Path("userId") userId: Long): PuntosDto
 
-    @POST("api/points/earn")
+    @POST("api/v1/points/earn")
     suspend fun earnPoints(@Body body: PuntosDto): PuntosDto
 
-    @POST("api/points/redeem")
+    @POST("api/v1/points/redeem")
     suspend fun redeemPoints(@Body body: PuntosDto): PuntosDto
 }

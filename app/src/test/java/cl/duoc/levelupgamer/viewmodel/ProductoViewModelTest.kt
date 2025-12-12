@@ -39,7 +39,11 @@ class ProductoViewModelTest : StringSpec({
                 Producto(2, "PlayStation 5", "Consola de videojuegos", 549990.0, "", "Consolas", "CO001")
             )
             coEvery { productoDao.observarTodos() } returns flowOf(dummyProducts)
-            val productoRepository = ProductoRepository(productoDao, api)
+            val productoRepository = ProductoRepository(
+                dao = productoDao,
+                securedApi = api,
+                publicApi = api
+            )
 
             val viewModel = ProductoViewModel(productoRepository)
 

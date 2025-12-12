@@ -1,5 +1,6 @@
 package cl.duoc.levelupgamer.ui
 
+import android.util.Patterns
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,13 +9,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -28,6 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cl.duoc.levelupgamer.model.Usuario
+import cl.duoc.levelupgamer.ui.components.FormTextField
+import cl.duoc.levelupgamer.ui.components.GlowCard
+import cl.duoc.levelupgamer.ui.components.PrimaryActionButton
+import cl.duoc.levelupgamer.ui.components.SecondaryActionButton
+import cl.duoc.levelupgamer.ui.theme.LocalLevelUpSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +43,30 @@ fun EditProfileScreen(
 ) {
     var name by remember { mutableStateOf(user.nombre) }
     var email by remember { mutableStateOf(user.email) }
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    val spacing = LocalLevelUpSpacing.current
+
+    fun validateAndSave() {
+        val trimmedName = name.trim()
+        val trimmedEmail = email.trim()
+        var hasError = false
+        if (trimmedName.isBlank()) {
+            nameError = "Ingresa tu nombre"
+            hasError = true
+        } else {
+            nameError = null
+        }
+        if (!Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
+            emailError = "Ingresa un correo válido"
+            hasError = true
+        } else {
+            emailError = null
+        }
+        if (!hasError) {
+            onSaveChanges(trimmedName, trimmedEmail)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -54,19 +81,19 @@ fun EditProfileScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    titleContentColor = MaterialTheme.colorScheme.onSecondary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSecondary
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
-    ) {
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(paddingValues)
+                .padding(horizontal = spacing.mdDp, vertical = spacing.smDp),
+            verticalArrangement = Arrangement.spacedBy(spacing.mdDp)
         ) {
             errorMessage?.let { message ->
                 Text(
@@ -75,39 +102,48 @@ fun EditProfileScreen(
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Nombre") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Button(
-                onClick = onChangePasswordClick,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                )
-            ) {
-                Text("Cambiar Contraseña")
+            GlowCard(modifier = Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.smDp)) {
+                    Text(
+                        text = "Datos personales",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    FormTextField(
+                        value = name,
+                        onValueChange = {
+                            name = it
+                            if (nameError != null) nameError = null
+                        },
+                        label = "Nombre",
+                        modifier = Modifier.fillMaxWidth(),
+                        supportingText = nameError,
+                        isError = nameError != null
+                    )
+                    FormTextField(
+                        value = email,
+                        onValueChange = {
+                            email = it
+                            if (emailError != null) emailError = null
+                        },
+                        label = "Email",
+                        modifier = Modifier.fillMaxWidth(),
+                        supportingText = emailError,
+                        isError = emailError != null
+                    )
+                }
             }
+            SecondaryActionButton(
+                text = "Cambiar contraseña",
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onChangePasswordClick
+            )
             Spacer(modifier = Modifier.weight(1f))
-            Button(
-                onClick = { onSaveChanges(name, email) }, 
+            PrimaryActionButton(
+                text = "Guardar cambios",
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                )
-            ) {
-                Text("Guardar Cambios")
-            }
+                onClick = { validateAndSave() }
+            )
         }
     }
 }

@@ -15,11 +15,14 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Store
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.navigation.compose.NavHost
 import androidx.compose.material3.*
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
@@ -88,20 +91,27 @@ fun LevelUpNavHost(
     var profileUpdateError by remember(usuarioActual?.id) { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
 
+    val productosLoading by productosVm.isSyncing.collectAsState()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val cartItems = carritoVm?.let { vm ->
+        val items by vm.items.collectAsState()
+        items
+    } ?: emptyList()
+    val cartItemCount = cartItems.sumOf { it.cantidad }
 
     Scaffold(
         bottomBar = {
 
 
-            val show = currentRoute == AppScreen.Catalog.route || currentRoute == AppScreen.Home.route || currentRoute == AppScreen.Blogs.route
+            val show = currentRoute == AppScreen.Catalog.route || currentRoute == AppScreen.Home.route || currentRoute == AppScreen.Blogs.route || currentRoute == AppScreen.Cart.route
             if (show) {
                 NavigationBar {
                     val items = listOf(
-                        AppScreen.Catalog to Pair(Icons.Default.List, "Catálogo"),
-                        AppScreen.Home to Pair(Icons.Default.Home, "Home"),
-                        AppScreen.Blogs to Pair(Icons.Default.List, "Blogs")
+                        AppScreen.Home to Pair(Icons.Default.Home, "Inicio"),
+                        AppScreen.Catalog to Pair(Icons.Default.Store, "Tienda"),
+                        AppScreen.Blogs to Pair(Icons.AutoMirrored.Filled.Article, "Blogs"),
+                        AppScreen.Cart to Pair(Icons.Default.ShoppingCart, "Carrito")
                     )
                     items.forEach { (screen, iconAndLabel) ->
                         NavigationBarItem(
@@ -111,7 +121,24 @@ fun LevelUpNavHost(
                                     launchSingleTop = true
                                 }
                             },
-                            icon = { Icon(iconAndLabel.first, contentDescription = iconAndLabel.second) },
+                            icon = {
+                                if (screen == AppScreen.Cart && cartItemCount > 0) {
+                                    BadgedBox(
+                                        badge = {
+                                            Badge {
+                                                Text(
+                                                    text = if (cartItemCount > 99) "99+" else cartItemCount.toString(),
+                                                    style = MaterialTheme.typography.labelSmall
+                                                )
+                                            }
+                                        }
+                                    ) {
+                                        Icon(iconAndLabel.first, contentDescription = iconAndLabel.second)
+                                    }
+                                } else {
+                                    Icon(iconAndLabel.first, contentDescription = iconAndLabel.second)
+                                }
+                            },
                             label = { Text(iconAndLabel.second) }
                         )
                     }
@@ -136,7 +163,7 @@ fun LevelUpNavHost(
 
                         }
                         val destination = if (usuarioRepository.usuarioActual.value != null) {
-                            AppScreen.Catalog.route
+                            AppScreen.Home.route
                         } else {
                             AppScreen.Login.route
                         }
@@ -153,7 +180,7 @@ fun LevelUpNavHost(
                 vm = vm,
                 onRegisterClick = { navController.navigate(AppScreen.Register.route) },
                 onLoggedIn = {
-                    navController.navigate(AppScreen.Catalog.route) {
+                    navController.navigate(AppScreen.Home.route) {
                         popUpTo(AppScreen.Login.route) { inclusive = true }
                     }
                 }
@@ -177,11 +204,17 @@ fun LevelUpNavHost(
             }
             CatalogScreen(
                 products = productos,
+                isLoading = productosLoading,
                 onProductClick = { producto -> navController.navigate(AppScreen.ProductDetail.createRoute(producto.id)) },
-                onViewCart = { navController.navigate(AppScreen.Cart.route) },
-                onOpenProfile = {
-                    profileUpdateError = null
-                    navController.navigate(AppScreen.Profile.route)
+                onAddToCart = { producto ->
+                    val vm = carritoVm
+                    if (vm != null) {
+                        vm.agregar(productoId = producto.id)
+                    } else {
+                        navController.navigate(AppScreen.Login.route) {
+                            popUpTo(AppScreen.Login.route) { inclusive = true }
+                        }
+                    }
                 }
             )
         }
@@ -189,11 +222,22 @@ fun LevelUpNavHost(
             val productos by productosVm.productos.collectAsState()
             val blogVm: BlogViewModel = viewModel(factory = BlogViewModel.Factory(blogRepository))
             val blogs by blogVm.blogs.collectAsState()
+            val featuredBlogs = remember(blogs) {
+                val prioritized = blogs.filter { it.featured }
+                (if (prioritized.isNotEmpty()) prioritized else blogs).take(4)
+            }
             HomeScreen(
                 productosDestacados = productos.take(6),
-                blogsDestacados = blogs.filter { it.featured },
+                blogsDestacados = featuredBlogs,
+                totalProductos = productos.size,
+                puntosUsuario = usuarioActual?.puntos ?: 0,
+                productosEnCarrito = cartItemCount,
                 onProductClick = { producto -> navController.navigate(AppScreen.ProductDetail.createRoute(producto.id)) },
-                onBlogClick = { blog -> navController.navigate(AppScreen.BlogDetail.createRoute(blog.id)) }
+                onBlogClick = { blog -> navController.navigate(AppScreen.BlogDetail.createRoute(blog.id)) },
+                onProfileClick = {
+                    profileUpdateError = null
+                    navController.navigate(AppScreen.Profile.route)
+                }
             )
         }
         composable(AppScreen.Profile.route) {
@@ -201,7 +245,7 @@ fun LevelUpNavHost(
             if (usuario == null) {
                 LaunchedEffect(Unit) {
                     navController.navigate(AppScreen.Login.route) {
-                        popUpTo(AppScreen.Catalog.route) { inclusive = true }
+                        popUpTo(AppScreen.Home.route) { inclusive = true }
                     }
                 }
             } else {
@@ -219,7 +263,7 @@ fun LevelUpNavHost(
                             profileImageUri = null
                             profileUpdateError = null
                             navController.navigate(AppScreen.Login.route) {
-                                popUpTo(AppScreen.Catalog.route) { inclusive = true }
+                                popUpTo(AppScreen.Home.route) { inclusive = true }
                             }
                         }
                     },
@@ -349,27 +393,36 @@ fun LevelUpNavHost(
                 }
             } else {
                 val usuario = usuarioActual
-                val productos by productosVm.productos.collectAsState()
                 val items by vm.items.collectAsState()
                 val checkoutState by vm.checkoutState.collectAsState()
+                val readOnly by vm.readOnly.collectAsState()
+                val error by vm.error.collectAsState()
                 ShoppingCartScreen(
                     items = items,
-                    productos = productos,
                     initialAddress = usuario?.direccion,
                     checkoutState = checkoutState,
-                    onBack = { navController.popBackStack() },
+                    readOnly = readOnly,
+                    errorMessage = error,
                     onChangeQuantity = { itemId, newQuantity ->
                         if (newQuantity >= 1) {
                             vm.actualizarCantidad(itemId, newQuantity)
                         }
                     },
                     onRemoveItem = vm::eliminar,
-                    onCheckout = vm::realizarCheckout,
+                    onCheckout = { total, direccion, notas ->
+                        vm.realizarCheckout(total, direccion, notas)
+                    },
                     onCheckoutStateConsumed = vm::consumirResultadoCheckout,
                     onCheckoutSuccess = {
                         navController.popBackStack()
                     },
-                    onGoToPayment = { navController.navigate(AppScreen.Payment.route) }
+                    onGoToPayment = { navController.navigate(AppScreen.Payment.route) },
+                    onExploreCatalog = {
+                        navController.navigate(AppScreen.Catalog.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onRetrySync = { vm.sincronizarCarrito() }
                 )
             }
         }
@@ -383,16 +436,16 @@ fun LevelUpNavHost(
                 }
             } else {
                 val usuario = usuarioActual
-                val productos by productosVm.productos.collectAsState()
                 val items by vm.items.collectAsState()
                 val checkoutState by vm.checkoutState.collectAsState()
                 PaymentScreen(
                     items = items,
-                    productos = productos,
                     initialAddress = usuario?.direccion,
                     checkoutState = checkoutState,
                     onBack = { navController.popBackStack() },
-                    onCheckout = vm::realizarCheckout,
+                    onCheckout = { total, direccion, notas ->
+                        vm.realizarCheckout(total, direccion, notas)
+                    },
                     onCheckoutStateConsumed = vm::consumirResultadoCheckout,
                     onCheckoutSuccess = {
                         navController.popBackStack()

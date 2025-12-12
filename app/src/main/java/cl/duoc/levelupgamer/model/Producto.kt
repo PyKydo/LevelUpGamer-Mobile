@@ -14,6 +14,7 @@ data class Producto(
     val categoria: String = "",
     val codigo: String = "",
     val stock: Int = 0,
-    val descuento: Double? = null
+    val descuento: Double? = null,
+    val gallery: List<String> = emptyList()
 )
 

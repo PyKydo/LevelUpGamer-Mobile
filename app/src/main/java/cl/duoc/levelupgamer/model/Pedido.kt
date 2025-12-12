@@ -1,8 +1,5 @@
 package cl.duoc.levelupgamer.model
 
-/**
- * Representa un pedido confirmado en el backend.
- */
 data class Pedido(
     val id: Long,
     val userId: Long,

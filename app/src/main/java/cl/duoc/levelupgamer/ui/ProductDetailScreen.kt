@@ -1,7 +1,8 @@
 package cl.duoc.levelupgamer.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import coil.compose.AsyncImage
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,13 +12,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,15 +43,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import cl.duoc.levelupgamer.BuildConfig
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cl.duoc.levelupgamer.BuildConfig
 import cl.duoc.levelupgamer.model.Producto
+import cl.duoc.levelupgamer.ui.components.LevelUpHighContrastOnPrimary
 import cl.duoc.levelupgamer.util.formatCurrency
+import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,19 +65,21 @@ fun ProductDetailScreen(
     onAddToCart: (Producto) -> Boolean,
     onGoToCart: () -> Unit
 ) {
-    var isExpanded by remember { mutableStateOf(false) }
+    var isExpanded by remember(producto.id) { mutableStateOf(false) }
+    var selectedImageIndex by remember(producto.id) { mutableStateOf(0) }
     val context = LocalContext.current
     val imageResId = remember(producto.codigo, producto.imageUrl) {
         resolveProductImageResId(context, producto)
     }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val imageGallery = remember(producto.imageUrl, producto.gallery) { buildProductGallery(producto) }
 
     val formattedPrice = remember(producto.precio) { formatCurrency(producto.precio) }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(producto.nombre) },
+                title = {},
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
@@ -79,7 +88,7 @@ fun ProductDetailScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary
                 )
             )
         },
@@ -91,31 +100,13 @@ fun ProductDetailScreen(
                 .padding(it)
                 .verticalScroll(rememberScrollState())
         ) {
-            val explicitUrl = producto.imageUrl.trim()
-            if (explicitUrl.startsWith("http", ignoreCase = true) || explicitUrl.startsWith("/")) {
-                val model = if (explicitUrl.startsWith("/")) {
-                    BuildConfig.API_BASE_URL.trimEnd('/') + explicitUrl
-                } else explicitUrl
-                AsyncImage(
-                    model = model,
-                    contentDescription = producto.nombre,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp),
-                    contentScale = ContentScale.Crop,
-                    placeholder = painterResource(id = imageResId),
-                    error = painterResource(id = imageResId)
-                )
-            } else {
-                Image(
-                    painter = painterResource(id = imageResId),
-                    contentDescription = producto.nombre,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp),
-                    contentScale = ContentScale.Crop
-                )
-            }
+            ProductImageGallery(
+                images = imageGallery,
+                selectedIndex = selectedImageIndex,
+                onSelect = { index -> selectedImageIndex = index },
+                placeholderResId = imageResId,
+                contentDescription = producto.nombre
+            )
             Column(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -126,7 +117,7 @@ fun ProductDetailScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "ID: ${producto.id}",
+                    text = "Código: ${producto.codigo.ifBlank { "N/D" }}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -174,7 +165,7 @@ fun ProductDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
+                        contentColor = LevelUpHighContrastOnPrimary
                     )
                 ) {
                     Text("Añadir al Carrito")
@@ -190,4 +181,103 @@ fun ProductDetailScreen(
             }
         }
     }
+}
+
+@Composable
+private fun ProductImageGallery(
+    images: List<String>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+    placeholderResId: Int,
+    contentDescription: String
+) {
+    val heroImage = images.getOrNull(selectedIndex)
+    val heroModel = resolveProductImageModel(heroImage)
+    val heroModifier = Modifier
+        .fillMaxWidth()
+        .height(300.dp)
+        .clip(RoundedCornerShape(20.dp))
+
+    if (heroModel != null) {
+        AsyncImage(
+            model = heroModel,
+            contentDescription = contentDescription,
+            modifier = heroModifier,
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(id = placeholderResId),
+            error = painterResource(id = placeholderResId)
+        )
+    } else {
+        Image(
+            painter = painterResource(id = placeholderResId),
+            contentDescription = contentDescription,
+            modifier = heroModifier,
+            contentScale = ContentScale.Crop
+        )
+    }
+
+    if (images.size > 1) {
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            itemsIndexed(images) { index, path ->
+                val resolved = resolveProductImageModel(path)
+                val shape = RoundedCornerShape(12.dp)
+                val borderColor = if (index == selectedIndex) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.outlineVariant
+                }
+                val thumbnailModifier = Modifier
+                    .size(72.dp)
+                    .clip(shape)
+                    .border(BorderStroke(1.dp, borderColor), shape)
+                    .clickable { onSelect(index) }
+
+                if (resolved != null) {
+                    AsyncImage(
+                        model = resolved,
+                        contentDescription = null,
+                        modifier = thumbnailModifier,
+                        contentScale = ContentScale.Crop,
+                        placeholder = painterResource(id = placeholderResId),
+                        error = painterResource(id = placeholderResId)
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = placeholderResId),
+                        contentDescription = null,
+                        modifier = thumbnailModifier,
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun buildProductGallery(producto: Producto): List<String> {
+    val candidates = mutableListOf<String>()
+    val primary = producto.imageUrl.trim()
+    if (primary.isNotEmpty()) {
+        candidates += primary
+    }
+    producto.gallery.forEach { raw ->
+        val normalized = raw.trim()
+        if (normalized.isNotEmpty() && normalized !in candidates) {
+            candidates += normalized
+        }
+    }
+    return candidates
+}
+
+private fun resolveProductImageModel(raw: String?): String? {
+    val value = raw?.trim().orEmpty()
+    if (value.isEmpty()) return null
+    if (value.startsWith("http", ignoreCase = true)) return value
+    val normalized = if (value.startsWith("/")) value else "/$value"
+    return BuildConfig.API_BASE_URL.trimEnd('/') + normalized
 }

@@ -184,7 +184,7 @@ class UsuarioRepository(
         } catch (e: HttpException) {
             val errBody = try { e.response()?.errorBody()?.string() } catch (_: Throwable) { null }
             if (errBody?.contains("No static resource") == true || e.code() == 404) {
-                throw IllegalStateException("El servidor no soporta el endpoint de cambio de contraseña (api/auth/change-password).", e)
+                throw IllegalStateException("El servidor no soporta el endpoint de cambio de contraseña (api/v1/auth/change-password).", e)
             }
             if (e.code() == 400) {
                 val validationMessage = buildValidationMessage(errBody)

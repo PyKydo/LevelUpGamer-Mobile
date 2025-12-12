@@ -12,6 +12,9 @@ interface ProductoDao {
     @Query("SELECT * FROM productos WHERE id = :id")
     suspend fun obtenerPorId(id: Long): Producto?
 
+    @Query("SELECT * FROM productos WHERE id IN (:ids)")
+    suspend fun obtenerPorIds(ids: List<Long>): List<Producto>
+
     @Query("SELECT COUNT(*) FROM productos")
     suspend fun contar(): Int
     @Insert(onConflict = OnConflictStrategy.REPLACE)
