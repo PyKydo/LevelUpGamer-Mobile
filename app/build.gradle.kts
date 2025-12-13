@@ -5,6 +5,12 @@ import org.gradle.api.Project
 val defaultRemoteApiUrl = "http://98.89.104.110:8081/"
 val defaultLocalApiUrl = "http://10.0.2.2:8081/"
 
+fun Project.secretProperty(name: String): String? {
+    val fromGradle = (findProperty(name) as? String)?.trim()?.takeIf { it.isNotEmpty() }
+    val fromEnv = providers.environmentVariable(name).orNull?.trim()?.takeIf { it.isNotEmpty() }
+    return fromGradle ?: fromEnv
+}
+
 fun normalizeBaseUrl(raw: String?, fallback: String): String {
     val resolved = raw?.trim()?.takeIf { it.isNotEmpty() } ?: fallback
     return if (resolved.endsWith('/')) resolved else "$resolved/"
@@ -48,6 +54,11 @@ android {
     val remoteBaseUrl = project.backendUrl("apiUrl", defaultRemoteApiUrl)
     val localBaseUrl = project.backendUrl("localApiUrl", defaultLocalApiUrl)
 
+    val keystorePath = project.secretProperty("KEYSTORE_PATH")
+    val keystorePassword = project.secretProperty("KEYSTORE_PASSWORD")
+    val signingKeyAlias = project.secretProperty("KEY_ALIAS")
+    val signingKeyPassword = project.secretProperty("KEY_PASSWORD")
+
     flavorDimensions += "backend"
     productFlavors {
         create("remote") {
@@ -60,6 +71,19 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            if (listOf(keystorePath, keystorePassword, signingKeyAlias, signingKeyPassword).all { it != null }) {
+                storeFile = rootProject.file(keystorePath!!)
+                storePassword = keystorePassword!!
+                keyAlias = signingKeyAlias!!
+                keyPassword = signingKeyPassword!!
+            } else {
+                logger.warn("Release signing skipped: missing KEYSTORE_PATH/KEYSTORE_PASSWORD/KEY_ALIAS/KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -67,6 +91,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {

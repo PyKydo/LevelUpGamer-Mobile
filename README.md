@@ -2,9 +2,9 @@
 
 ## Nombres de los Integrantes
 
-- Matías Gutiérrez — Líder técnico / backend móvil
-- David Larenas — UI/UX y validaciones
-- Víctor Mena — QA, empaquetado y documentación
+- Matías Gutiérrez
+- David Larenas
+- Víctor Mena
 
 ## Funcionalidades
 
@@ -32,6 +32,11 @@
 ## APK Firmado y Archivo `.jks`
 
 - APK firmado disponible en Releases (placeholder hasta publicación): <https://github.com/PyKydo/LevelUpGamer-Mobile/releases/latest>
+- Binarios publicados en la Release:
+- **app-remote-release.apk**: build firmada apuntando al backend remoto desplegado.
+- **app-local-release.apk**: build firmada para backend local (`10.0.2.2:8081`), pensada para pruebas en red interna.
+- **app-remote-debug.apk**: build de depuración contra el backend remoto, incluye logs y herramientas de QA.
+- **app-local-debug.apk**: build de depuración para backend local, facilita probar servicios en tu equipo.
 - Keystore local: `LevelUpGamer/keystore/levelup.jks` (fuera del repositorio; protegido mediante `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`).
 - Generado con `keytool -genkeypair` y reutilizado por la tarea `assembleRelease`.
 
@@ -46,8 +51,8 @@
 
 ## Información Técnica Complementaria
 
-- **Arquitectura:** Jetpack Compose + ViewModel + StateFlow + navegación declarativa.
-- **Red:** Retrofit + OkHttp con interceptores y `NetworkErrorMapper`.
+- **Arquitectura:** Jetpack Compose + ViewModel + StateFlow
+- **Red:** Retrofit + OkHttp con interceptores
 - **Persistencia:** Room (catálogo/carrito) y DataStore (preferencias y tokens).
 - **Inyección:** `ServiceLocator` por variante con inicialización perezosa.
 - **Pruebas:** `./gradlew test` para unitarias.
