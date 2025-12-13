@@ -32,6 +32,17 @@ import cl.duoc.levelupgamer.ui.components.PrimaryActionButton
 import cl.duoc.levelupgamer.ui.components.SecondaryActionButton
 import cl.duoc.levelupgamer.ui.theme.LocalLevelUpSpacing
 
+private val AllowedEmailDomains = listOf(
+    "gmail.com",
+    "hotmail.com",
+    "outlook.com",
+    "yahoo.com",
+    "duoc.cl",
+    "profesor.duoc.cl",
+    "duocuc.cl"
+)
+private const val MaxEmailLength = 100
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
@@ -57,11 +68,26 @@ fun EditProfileScreen(
         } else {
             nameError = null
         }
-        if (!Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
-            emailError = "Ingresa un correo válido"
-            hasError = true
-        } else {
-            emailError = null
+        when {
+            trimmedEmail.isBlank() -> {
+                emailError = "Ingresa un correo"
+                hasError = true
+            }
+            !Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches() -> {
+                emailError = "Ingresa un correo válido"
+                hasError = true
+            }
+            trimmedEmail.length > MaxEmailLength -> {
+                emailError = "El correo no puede superar 100 caracteres"
+                hasError = true
+            }
+            !hasAllowedDomain(trimmedEmail) -> {
+                emailError = "Solo se permiten correos Gmail, Outlook, Yahoo o Duoc"
+                hasError = true
+            }
+            else -> {
+                emailError = null
+            }
         }
         if (!hasError) {
             onSaveChanges(trimmedName, trimmedEmail)
@@ -146,4 +172,9 @@ fun EditProfileScreen(
             )
         }
     }
+}
+
+private fun hasAllowedDomain(email: String): Boolean {
+    val domain = email.substringAfterLast("@", "")
+    return domain.isNotEmpty() && AllowedEmailDomains.any { it.equals(domain, ignoreCase = true) }
 }

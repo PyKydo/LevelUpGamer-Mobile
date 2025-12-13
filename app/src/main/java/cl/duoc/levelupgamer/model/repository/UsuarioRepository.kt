@@ -152,12 +152,16 @@ class UsuarioRepository(
 
     override suspend fun actualizarPerfil(nombre: String, email: String) = withContext(ioDispatcher) {
         val actual = _usuarioActual.value ?: throw IllegalStateException("No hay un usuario logueado")
+        val sanitizedName = nombre.trim()
+        val sanitizedEmail = email.trim()
+        require(sanitizedName.isNotEmpty()) { "El nombre no puede estar vacío" }
+        require(sanitizedEmail.isNotEmpty()) { "El correo no puede estar vacío" }
         val updated = secureApi.updateUser(
             id = actual.id,
             body = UsuarioUpdateDto(
-                nombre = nombre,
+                nombre = sanitizedName,
                 apellidos = actual.apellido.orEmpty(),
-                correo = email,
+                correo = sanitizedEmail,
                 region = actual.region,
                 comuna = actual.comuna,
                 direccion = actual.direccion,
