@@ -38,7 +38,6 @@
 - **app-remote-debug.apk**: build de depuración contra el backend remoto, incluye logs y herramientas de QA.
 - **app-local-debug.apk**: build de depuración para backend local, facilita probar servicios en tu equipo.
 - Keystore local: `LevelUpGamer/keystore/levelup.jks` (fuera del repositorio; protegido mediante `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`).
-- Generado con `keytool -genkeypair` y reutilizado por la tarea `assembleRelease`.
 
 ## Código Fuente de Microservicios y App Móvil
 
