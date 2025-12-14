@@ -78,9 +78,6 @@ android {
                 storePassword = keystorePassword!!
                 keyAlias = signingKeyAlias!!
                 keyPassword = signingKeyPassword!!
-            } else {
-                logger.warn("Release signing skipped: missing KEYSTORE_PATH/KEYSTORE_PASSWORD/KEY_ALIAS/KEY_PASSWORD")
-            }
         }
     }
 
