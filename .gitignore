@@ -10,8 +10,8 @@ build/
 local.properties
 secrets.properties
 keystore.properties
-*.keystore
-*.jks
+#*.keystore
+#*.jks
 debug.keystore
 
 # Firebase / Google services
